@@ -15,7 +15,7 @@ def main():
         image = np.expand_dims(image, axis=0)
         image = np.asarray(image, dtype='float32')
         image = image / 255.0
-        image = np.reshape(image, (360, 640, 1))
+        image = np.reshape(image, (640, 360, 1))
         image = np.expand_dims(image, axis=0)
         prediction = model.predict(image)
         print(prediction)

@@ -39,7 +39,7 @@ def create_model() -> keras.Sequential:
     model.summary()
     model.compile(
         'adam',
-        loss='sparse_categorical_crossentropy',
+        loss=keras.losses.categorical_crossentropy,
         metrics=['accuracy']
     )
     return model
@@ -52,6 +52,7 @@ def load_data() -> tuple:
         image = cv.imread(f'./data/left/{file}')
         image = prep_image(image)
         image = cv.cvtColor(src=image, dst=image, code=cv.COLOR_RGB2GRAY)
+        image = np.resize(image, (INPUT_SHAPE[0], INPUT_SHAPE[1]))
         image = np.asarray(image, dtype='float32')
         train_x.append(image / 255.0)
         train_y.append(0)
@@ -60,6 +61,7 @@ def load_data() -> tuple:
         image = cv.imread(f'./data/right/{file}')
         image = prep_image(image)
         image = cv.cvtColor(src=image, dst=image, code=cv.COLOR_RGB2GRAY)
+        image = np.resize(image, (INPUT_SHAPE[0], INPUT_SHAPE[1]))
         image = np.asarray(image, dtype='float32')
         train_x.append(image / 255.0)
         train_y.append(1)

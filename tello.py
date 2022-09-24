@@ -1,10 +1,9 @@
 import time
 import cv2
-import keyboard
 import mediapipe as mp
-from queue import Queue
 from djitellopy import Tello
 from threading import Thread
+from queue import Queue
 
 
 class HandTracker:
@@ -46,34 +45,44 @@ class HandTracker:
         return lmlist
 
 
-def video_stream(tello: Tello):
+def video_stream(tello: Tello, queue: Queue):
     tello.streamon()
     # tello.set_video_bitrate(Tello.BITRATE_1MBPS)
     # tello.set_video_fps(Tello.FPS_15)
-    frame_read = tello.get_frame_read()
     tracker = HandTracker()
+    read = tello.get_frame_read()
 
     while True:
-        img = frame_read.frame
+        img = read.frame
         img = tracker.hands_finder(img)
         cv2.putText(img, str(tello.get_battery()), (40, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 0, 0),
                     fontScale=1,
                     thickness=2)
         cv2.imshow('DRONE - FEED', img)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-
-def controller(tello: Tello):
-    tello.takeoff()
-    while True:
-
+        # control
         key = cv2.waitKey(1) & 0xFF
 
         if key == ord('q'):
+            queue.put(key)
             break
         elif key == ord('w'):
+            queue.put(key)
+        elif key == ord('s'):
+            queue.put(key)
+        elif key == ord('a'):
+            queue.put(key)
+        elif key == ord('d'):
+            queue.put(key)
+
+
+def controller(tello: Tello, queue: Queue):
+    tello.takeoff()
+
+    while True:
+        key = queue.get()
+        print(chr(key))
+        if key == ord('w'):
             tello.move_forward(20)
         elif key == ord('s'):
             tello.move_back(20)
@@ -82,9 +91,11 @@ def controller(tello: Tello):
         elif key == ord('d'):
             tello.move_right(20)
         elif key == ord('q'):
-            tello.move_up(20)
-        elif key == ord('r'):
+            break
+        elif key == ord('space'):
             tello.move_down(20)
+        while not queue.empty():
+            queue.get()
 
     tello.land()
     cv2.destroyWindow('DRONE - FEED')
@@ -97,12 +108,13 @@ def keep_alive(tello: Tello):
 
 
 def main():
+    queue = Queue()
     tello = Tello()
     tello.connect()
 
-    threads = [Thread(target=keep_alive, args=(tello, )),
-               Thread(target=video_stream, args=(tello, )),
-               Thread(target=controller, args=(tello, ))]
+    threads = [Thread(target=keep_alive, args=(tello, queue)),
+               Thread(target=video_stream, args=(tello, queue)),
+               Thread(target=controller, args=(tello, queue))]
 
     for thread in threads:
         thread.start()

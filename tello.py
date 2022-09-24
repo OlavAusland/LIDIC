@@ -4,6 +4,8 @@ import mediapipe as mp
 from djitellopy import Tello
 from threading import Thread
 from queue import Queue
+from controller import XboxController
+import numba
 
 
 class HandTracker:
@@ -67,28 +69,59 @@ def video_stream(tello: Tello, queue: Queue):
 
 
 def controller(tello: Tello, queue: Queue):
-    # tello.takeoff()
-    airborne = False
+    using_controller = True
+
+    joy = XboxController()
     while True:
-        key = queue.get()
-        if key == ord('w'):
-            tello.move_forward(20)
-        elif key == ord('s'):
-            tello.move_back(20)
-        elif key == ord('a'):
-            tello.move_left(20)
-        elif key == ord('d'):
-            tello.move_right(20)
-        elif key == ord('q'):
-            break
-        elif key == ord('x'):
-            if airborne:
-                airborne = False
-                tello.land()
-            else:
-                airborne = True
-                tello.takeoff()
-        clear_queue(queue)
+
+        if using_controller:
+            input = joy.read()
+            try:
+                tello.send_command_without_return(f"rc {int(100 * input['LJ_X'])} {int(100 * input['LJ_Y'])} {int(100 * input['RJ_Y'])} {int(100 * input['RJ_X'])}")
+                time.sleep(0.01)
+
+                if input['RJ_T']:
+                    if tello.is_flying:
+                        tello.land()
+                    else:
+                        tello.takeoff()
+                elif input['X']:
+                    tello.send_command_without_return('flip l')
+                elif input['B']:
+                    tello.send_command_without_return('flip r')
+                elif input['A']:
+                    tello.send_command_without_return('flip b')
+                elif input['Y']:
+                    tello.send_command_without_return('flip f')
+            except Exception as exception:
+                print(exception)
+        else:
+            key = queue.get()
+            try:
+                if key == ord('w'):
+                    tello.send_command_without_return('rc 0 100 0 0')
+                elif key == ord('s'):
+                    # tello.send_command_with_return(f'back {sensitivity}', timeout)
+                    tello.send_command_without_return('rc 0 -100 0 0')
+                elif key == ord('a'):
+                    tello.send_command_without_return('rc -100 0 0 0')
+                    # tello.send_command_with_return(f'left {sensitivity}', timeout)
+                elif key == ord('d'):
+                    tello.send_command_without_return('rc 100 0 0 0')
+                    # tello.send_command_with_return(f'right {sensitivity}', timeout)
+                elif key == ord('q'):
+                    break
+                elif key == ord('r'):
+                    tello.send_command_without_return('rc 0 0 0 0')
+                elif key == ord('x'):
+                    tello.send_command_without_return('rc 0 0 0 0')
+                    if tello.is_flying:
+                        tello.land()
+                    else:
+                        tello.takeoff()
+                clear_queue(queue)
+            except Exception as e:
+                print(f'[INFO] Command Failed: {e}')
     tello.land()
     cv2.destroyWindow('DRONE - FEED')
 
@@ -110,8 +143,8 @@ def main():
     tello.connect()
 
     threads = [
-               Thread(target=video_stream, args=(tello, queue)),
-               Thread(target=controller, args=(tello, queue))]
+        Thread(target=video_stream, args=(tello, queue)),
+        Thread(target=controller, args=(tello, queue))]
 
     for thread in threads:
         thread.start()

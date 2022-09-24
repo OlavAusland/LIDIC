@@ -64,19 +64,6 @@ def video_stream(tello: Tello, queue: Queue):
         key = cv2.waitKey(1) & 0xFF
         if key != 255:
             queue.put(key)
-        """
-        if key == ord('q'):
-            queue.put(key)
-            break
-        elif key == ord('w'):
-            queue.put(key)
-        elif key == ord('s'):
-            queue.put(key)
-        elif key == ord('a'):
-            queue.put(key)
-        elif key == ord('d'):
-            queue.put(key)
-        """
 
 
 def controller(tello: Tello, queue: Queue):

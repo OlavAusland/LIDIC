@@ -62,7 +62,9 @@ def video_stream(tello: Tello, queue: Queue):
 
         # control
         key = cv2.waitKey(1) & 0xFF
-
+        if key != 255:
+            queue.put(key)
+        """
         if key == ord('q'):
             queue.put(key)
             break
@@ -74,14 +76,14 @@ def video_stream(tello: Tello, queue: Queue):
             queue.put(key)
         elif key == ord('d'):
             queue.put(key)
+        """
 
 
 def controller(tello: Tello, queue: Queue):
-    tello.takeoff()
-
+    # tello.takeoff()
+    airborne = False
     while True:
         key = queue.get()
-        print(chr(key))
         if key == ord('w'):
             tello.move_forward(20)
         elif key == ord('s'):
@@ -92,13 +94,21 @@ def controller(tello: Tello, queue: Queue):
             tello.move_right(20)
         elif key == ord('q'):
             break
-        elif key == ord('space'):
-            tello.move_down(20)
-        while not queue.empty():
-            queue.get()
-
+        elif key == ord('x'):
+            if airborne:
+                airborne = False
+                tello.land()
+            else:
+                airborne = True
+                tello.takeoff()
+        clear_queue(queue)
     tello.land()
     cv2.destroyWindow('DRONE - FEED')
+
+
+def clear_queue(queue: Queue):
+    while not queue.empty():
+        queue.get()
 
 
 def keep_alive(tello: Tello):
@@ -112,7 +122,7 @@ def main():
     tello = Tello()
     tello.connect()
 
-    threads = [Thread(target=keep_alive, args=(tello, queue)),
+    threads = [
                Thread(target=video_stream, args=(tello, queue)),
                Thread(target=controller, args=(tello, queue))]
 

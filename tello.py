@@ -96,7 +96,10 @@ def video_stream(tello: Tello, queue: Queue):
             prev_frame_time = new_frame_time
             fps = str(int(fps))
             # CALCULATE FPS
-            cv2.putText(img=img, text=f'FPS: {fps}', org=(img.shape[1] - 100, 40), color=(255, 255, 255),
+            cv2.putText(img=img, text=f'FPS: {fps}', org=(img.shape[1] - 150, 40), color=(255, 255, 255),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5)
+            cv2.putText(img=img, text=f'Temp: {str(tello.get_temperature())}C',
+                        org=(img.shape[1] - 150, 80), color=(255, 255, 255),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5)
 
             cv2.imshow('DRONE - FEED', img)

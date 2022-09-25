@@ -66,6 +66,12 @@ def video_stream(tello: Tello, queue: Queue):
 
             img = read.frame
             img = tracker.hands_finder(img)
+
+            center = [int(img.shape[1] / 2), int(img.shape[0] / 2)]
+
+            # crosshair
+            cv2.circle(img=img, center=(int(img.shape[1] / 2), int(img.shape[0] / 2)), color=(255, 255, 255), radius=2)
+
             cv2.putText(img, f"Battery: {str(tello.get_battery())}%", (20, 40),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255),
                         fontScale=0.5,

@@ -3,6 +3,7 @@ import math
 import threading
 import numba
 
+
 class XboxController(object):
     MAX_TRIG_VAL = math.pow(2, 8)
     MAX_JOY_VAL = math.pow(2, 15)
@@ -47,7 +48,8 @@ class XboxController(object):
         y = self.Y
         return {'LJ_X': xl, 'LJ_Y': yl, 'RJ_X': xr,
                 'RJ_Y': yr, 'LJ_T': lt, 'RJ_T': rt,
-                'A': a, 'B': b, 'X': x, 'Y': y, }
+                'A': a, 'B': b, 'X': x, 'Y': y,
+                'LT': round(self.LeftTrigger), 'RT': round(self.RightTrigger)}
 
     def _monitor_controller(self):
         while True:
@@ -98,4 +100,4 @@ class XboxController(object):
 if __name__ == '__main__':
     joy = XboxController()
     while True:
-        print(joy.read())
+        print(joy.read(), end='\r')

@@ -150,6 +150,7 @@ def controller(tello: Tello, queue: Queue):
     using_controller = True
     if using_controller:
         joy = XboxController()
+    tello.set_speed(100)
     while True:
         if using_controller:
             input = joy.read()
@@ -196,7 +197,7 @@ def controller(tello: Tello, queue: Queue):
                     if tello.is_flying:
                         tello.land()
                     else:
-                        tello.takeoff()
+                        tello.send_command_without_return('takeoff')
                 clear_queue(queue)
             except Exception as e:
                 print(f'[INFO] Command Failed: {e}')

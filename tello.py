@@ -57,7 +57,7 @@ def video_stream(tello: Tello, queue: Queue):
     tracker = HandTracker()
     read = tello.get_frame_read()
 
-    base_vector = [4, 1, 4]
+    base_vector = [4, 2, 4]
     prev_frame_time = 0
     while True:
         # velocity
@@ -86,8 +86,6 @@ def video_stream(tello: Tello, queue: Queue):
             vel = np.multiply(vel, base_vector)
             cv2.arrowedLine(img=img, pt1=[50, 200], pt2=[50 + vel[0], 200 - vel[2]],
                             thickness=2, color=(0, 255, 0))
-
-
 
 
             # DRAW ROTATIONS

@@ -56,7 +56,6 @@ def video_stream(tello: Tello, queue: Queue):
     tello.set_video_resolution(tello.RESOLUTION_480P)
     tracker = HandTracker()
     read = tello.get_frame_read()
-
     base_vector = [4, 2, 4]
     prev_frame_time = 0
     while True:
@@ -151,6 +150,7 @@ def draw_velocity(img: np.ndarray, vel):
 
 
 def controller(tello: Tello, queue: Queue):
+    downwards_cam = False
     using_controller = True
     if using_controller:
         joy = XboxController()
@@ -176,6 +176,9 @@ def controller(tello: Tello, queue: Queue):
                     tello.send_command_without_return('flip b')
                 elif input['Y']:
                     tello.send_command_without_return('flip f')
+                elif input['RB']:
+                    tello.set_video_direction(int(downwards_cam))
+                    downwards_cam = not downwards_cam
             except Exception as exception:
                 print(exception)
         else:

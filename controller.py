@@ -49,7 +49,8 @@ class XboxController(object):
         return {'LJ_X': xl, 'LJ_Y': yl, 'RJ_X': xr,
                 'RJ_Y': yr, 'LJ_T': lt, 'RJ_T': rt,
                 'A': a, 'B': b, 'X': x, 'Y': y,
-                'LT': round(self.LeftTrigger), 'RT': round(self.RightTrigger)}
+                'LT': round(self.LeftTrigger), 'RT': round(self.RightTrigger),
+                'LB': self.LeftBumper, 'RB': self.RightBumper}
 
     def _monitor_controller(self):
         while True:

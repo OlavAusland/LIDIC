@@ -8,45 +8,7 @@ from threading import Thread
 from queue import Queue
 from controller import XboxController
 import numpy as np
-
-
-class HandTracker:
-    def __init__(self, mode=False, max_hands=2, detection_con=0.5, model_complexity=1, track_con=0.5):
-        self.mode = mode
-        self.maxHands = max_hands
-        self.detectionCon = detection_con
-        self.modelComplex = model_complexity
-        self.trackCon = track_con
-        self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.modelComplex,
-                                        self.detectionCon, self.trackCon)
-        self.mpDraw = mp.solutions.drawing_utils
-        self.results = None
-
-    def hands_finder(self, image, draw=True):
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        self.results = self.hands.process(image_rgb)
-
-        if self.results.multi_hand_landmarks:
-            for handLms in self.results.multi_hand_landmarks:
-
-                if draw:
-                    self.mpDraw.draw_landmarks(image, handLms, self.mpHands.HAND_CONNECTIONS)
-        return image
-
-    def position_finder(self, image, hand_no=0, draw=True):
-        lmlist = []
-        cx, cy = 0, 0
-        if self.results.multi_hand_landmarks:
-            hand = self.results.multi_hand_landmarks[hand_no]
-            for id, lm in enumerate(hand.landmark):
-                h, w, c = image.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                lmlist.append([id, cx, cy])
-            if draw:
-                cv2.circle(image, (cx, cy), 2, (255, 0, 255), cv2.FILLED)
-
-        return lmlist
+from utils import HandTracker
 
 
 def video_stream(tello: Tello, queue: Queue):
@@ -149,6 +111,17 @@ def draw_velocity(img: np.ndarray, vel):
     cv2.circle(img, (30, img.shape[0] - 30), color=(0, 255, 0), thickness=1, radius=2)
 
 
+def clear_queue(queue: Queue):
+    while not queue.empty():
+        queue.get()
+
+
+def keep_alive(tello: Tello):
+    while True:
+        tello.send_command_with_return('stop')
+        time.sleep(10)
+
+
 def controller(tello: Tello, queue: Queue):
     downwards_cam = False
     using_controller = True
@@ -210,17 +183,6 @@ def controller(tello: Tello, queue: Queue):
                 print(f'[INFO] Command Failed: {e}')
     tello.land()
     cv2.destroyWindow('DRONE - FEED')
-
-
-def clear_queue(queue: Queue):
-    while not queue.empty():
-        queue.get()
-
-
-def keep_alive(tello: Tello):
-    while True:
-        tello.send_command_with_return('stop')
-        time.sleep(10)
 
 
 def main():

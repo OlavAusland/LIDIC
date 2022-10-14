@@ -1,5 +1,6 @@
 import mediapipe as mp
 import cv2
+import numpy as np
 
 
 class HandTracker:
@@ -40,3 +41,16 @@ class HandTracker:
 
         return lmlist
 
+
+def detectQRCode(frame: np.ndarray):
+    image: np.ndarray = frame.copy()
+    detector = cv2.QRCodeDetector()
+
+    image = cv2.cvtColor(src=image, dst=image, code=cv2.COLOR_BGR2GRAY)
+    text, points, _ = detector.detectAndDecode(image)
+
+    if points is not None:
+        for point in points[0]:
+            image = cv2.circle(image, (int(point[0]), int(point[1])), 3, thickness=3, color=(0, 255, 0))
+        image = cv2.polylines(image, np.int32([np.array(points[0])]), color=(0, 255, 0), isClosed=True, thickness=2)
+    return image

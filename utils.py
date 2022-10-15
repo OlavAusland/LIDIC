@@ -1,6 +1,10 @@
+from typing import List
+
+import keras
 import mediapipe as mp
 import cv2
 import numpy as np
+from tensorflow.keras.models import load_model
 
 
 class HandTracker:
@@ -27,7 +31,7 @@ class HandTracker:
                     self.mpDraw.draw_landmarks(image, handLms, self.mpHands.HAND_CONNECTIONS)
         return image
 
-    def position_finder(self, image, hand_no=0, draw=True):
+    def position_finder(self, image, hand_no=0, draw=True, append_id: bool = False):
         lmlist = []
         cx, cy = 0, 0
         if self.results.multi_hand_landmarks:
@@ -35,11 +39,43 @@ class HandTracker:
             for id, lm in enumerate(hand.landmark):
                 h, w, c = image.shape
                 cx, cy = int(lm.x * w), int(lm.y * h)
-                lmlist.append([id, cx, cy])
+
+                if append_id:
+                    lmlist.append([id, cx, cy])
+                else:
+                    lmlist.append([cx, cy])
             if draw:
                 cv2.circle(image, (cx, cy), 2, (255, 0, 255), cv2.FILLED)
 
         return lmlist
+
+
+class GestureControl:
+    """
+    The GestureControl object controls gesture recognition.
+
+    :param model: The model is used to locate where the model is.
+    :type string:
+    :type model: str
+    :param classes: Classes is used for the classification
+    :
+    """
+    def __init__(self, model: str, classes: List[str], hand_tracker: HandTracker = HandTracker()):
+        self.model: keras.Sequential = load_model(model)
+        self.classes = classes
+        self.hand_tracker = hand_tracker
+
+    def predict(self, frame: np.ndarray):
+        self.hand_tracker.hands_finder(frame, draw=False)
+        landmarks = self.hand_tracker.position_finder(frame, hand_no=0, draw=False)
+        print('Here')
+        if not landmarks:
+            return 'None'
+
+        prediction = self.model.predict([landmarks])
+
+        class_id = np.argmax(prediction)
+        return self.classes[class_id]
 
 
 def detectQRCode(frame: np.ndarray):

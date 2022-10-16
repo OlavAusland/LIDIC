@@ -15,14 +15,15 @@ def train(cap: cv2.VideoCapture, tracker: HandTracker):
         tracker.hands_finder(frame, False)
         landmarks = tracker.position_finder(frame, normalized=False)
 
-        for lm in landmarks:
-            cv2.circle(frame, lm, radius=2, thickness=1, color=(0, 255, 0))
+        if len(landmarks) > 0:
+            for lm in landmarks:
+                cv2.circle(frame, lm, radius=2, thickness=1, color=(0, 255, 0))
 
-        cv2.putText(frame, f'Label: {label}', (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0))
+            cv2.putText(frame, f'Label: {label}', (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0))
 
-        landmarks = np.array(tracker.position_finder(frame, normalized=True)).flatten()
-        landmarks = np.insert(landmarks, 0, label, axis=0)
-        dataset.append(landmarks)
+            landmarks = np.array(tracker.position_finder(frame, normalized=True)).flatten()
+            landmarks = np.insert(landmarks, 0, label, axis=0)
+            dataset.append(landmarks)
 
         cv2.imshow('main', frame)
         key = cv2.waitKey(1) & 0xFF
@@ -31,7 +32,7 @@ def train(cap: cv2.VideoCapture, tracker: HandTracker):
             break
         elif 48 <= key <= 57:
             label = chr(key)
-    with open('gesture_dataset.csv', 'w', newline='') as file:
+    with open('gesture_data.csv', 'w', newline='') as file:
         write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         write.writerows(dataset)
 

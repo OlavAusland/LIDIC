@@ -40,7 +40,7 @@ def load_data(dataset: str):
 
 
 def main():
-    x_train, x_test, y_train, y_test = load_data('keypoint.csv')
+    x_train, x_test, y_train, y_test = load_data('gesture_data.csv')
     model = create_model()
     model.fit(x_train, y_train, epochs=1000, batch_size=128, validation_data=(x_test, y_test))
     model.save('models/model.h5')

@@ -15,6 +15,9 @@ from tellogui import *
 
 
 class MainWindow(QMainWindow):
+    """
+    Tello video stream and control integrated into a tkinter window.
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.tello = Tello()

@@ -8,6 +8,8 @@ from controllers.controller import XboxController
 import numpy as np
 from utils import GestureControl, HandTracker, ControlType
 from tellogui import *
+from controllers.gesture_controller import gesture_controller
+from controllers.keyboard_controller import keyboard_controller
 
 
 def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
@@ -49,7 +51,6 @@ def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
             cv2.arrowedLine(img=img, pt1=[50, 200], pt2=[50 + vel[0], 200 - vel[2]],
                             thickness=2, color=(0, 255, 0))
 
-
             # DRAW ROTATIONS
             draw_rotation(img, tello.get_yaw())
             draw_roll(img,  tello.get_roll())
@@ -88,7 +89,7 @@ def keep_alive(tello: Tello):
         time.sleep(10)
 
 
-def controller(tello: Tello, queue: Queue, frame_queue: Queue):
+def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
     joy = None
     downwards_cam = False
     tello.set_speed(100)
@@ -131,48 +132,10 @@ def controller(tello: Tello, queue: Queue, frame_queue: Queue):
             except Exception as exception:
                 print(exception)
         elif control_type == ControlType.gesture:
-            try:
-                gesture = gesture_control.predict(frame_queue.get())
-                print(gesture)
-                if gesture == 'rock':
-                    tello.send_command_without_return('takeoff')
-                elif gesture == 'thumbs up':
-                    tello.send_command_without_return('rc -50 0 0 0')
-                elif gesture == 'thumbs down':
-                    tello.send_command_without_return('rc 50 0 0 0')
-                else:
-                    tello.send_command_without_return('rc 0 0 0 0')
-            except Exception as e:
-                pass
-
+            gesture_controller(frame=frame_queue.get(), tello=tello,
+                               gesture_control=gesture_control, debug=True)
         elif control_type == ControlType.keyboard:
-            key = queue.get()
-            try:
-                if key == ord('w'):
-                    tello.send_command_without_return('rc 0 100 0 0')
-                elif key == ord('s'):
-                    # tello.send_command_with_return(f'back {sensitivity}', timeout)
-                    tello.send_command_without_return('rc 0 -100 0 0')
-                elif key == ord('a'):
-                    tello.send_command_without_return('rc -100 0 0 0')
-                    # tello.send_command_with_return(f'left {sensitivity}', timeout)
-                elif key == ord('d'):
-                    tello.send_command_without_return('rc 100 0 0 0')
-                    # tello.send_command_with_return(f'right {sensitivity}', timeout)
-                elif key == ord('q'):
-                    break
-                elif key == ord('r'):
-                    tello.send_command_without_return('rc 0 0 0 0')
-                elif key == ord('x'):
-                    tello.send_command_without_return('rc 0 0 0 0')
-                    if tello.is_flying:
-                        tello.land()
-                    else:
-                        tello.send_command_without_return('takeoff')
-                clear_queue(queue)
-                if frame_queue.qsize() > 10: clear_queue(frame_queue)
-            except Exception as e:
-                print(f'[INFO] Command Failed: {e}')
+            keyboard_controller(tello=tello, key_queue=key_queue)
     tello.land()
     cv2.destroyWindow('DRONE - FEED')
 

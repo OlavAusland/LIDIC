@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from enum import Enum
 import keras
 import mediapipe as mp
@@ -9,7 +9,7 @@ from tensorflow.keras.models import load_model
 
 class ControlType(Enum):
     """
-    Enumerator class to switch beetween controller modes
+    Enumerator class to switch between controller modes.
     """
     controller = 0
     keyboard = 1
@@ -99,10 +99,12 @@ class GestureControl:
         self.classes = classes
         self.hand_tracker = hand_tracker
 
-    def predict(self, frame: np.ndarray) -> str:
+    def predict(self, frame: np.ndarray, debug: bool = False) -> Union[str, None]:
         """
         Predict if what class is in a frame
 
+        :param debug: Print time used to predict a frame
+        :type debug: bool
         :param frame: Ndarray to operate on
         :return: class predicted
         :rtype: string
@@ -111,7 +113,7 @@ class GestureControl:
         landmarks = self.hand_tracker.position_finder(frame, hand_no=0, draw=False)
         if not landmarks:
             return None
-        prediction = self.model.predict([landmarks])
+        prediction = self.model.predict([landmarks], verbose=debug)
 
         class_id = np.argmax(prediction)
 

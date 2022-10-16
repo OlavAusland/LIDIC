@@ -1,10 +1,9 @@
 import os
-import sys
 import cv2 as cv
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
-from preprocess import prep_image
+from old_solutions.preprocess import prep_image
 
 INPUT_SHAPE = (640, 360, 1)
 NUM_OUTPUT = 2
@@ -48,7 +47,7 @@ def create_model() -> keras.Sequential:
 def load_data() -> tuple:
     train_x, train_y = [], []
 
-    for file in os.listdir('./data/left')[0:10]:
+    for file in os.listdir('../data/left')[0:10]:
         image = cv.imread(f'./data/left/{file}')
         image = prep_image(image)
         image = cv.cvtColor(src=image, dst=image, code=cv.COLOR_RGB2GRAY)
@@ -57,7 +56,7 @@ def load_data() -> tuple:
         train_x.append(image / 255.0)
         train_y.append(0)
 
-    for file in os.listdir('./data/right')[0:10]:
+    for file in os.listdir('../data/right')[0:10]:
         image = cv.imread(f'./data/right/{file}')
         image = prep_image(image)
         image = cv.cvtColor(src=image, dst=image, code=cv.COLOR_RGB2GRAY)

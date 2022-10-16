@@ -2,9 +2,15 @@ from inputs import get_gamepad
 import math
 import threading
 import numba
+from djitellopy import Tello
 
 
 class XboxController(object):
+    """
+    Class to detect xbox controller input.
+
+    """
+
     MAX_TRIG_VAL = math.pow(2, 8)
     MAX_JOY_VAL = math.pow(2, 15)
 
@@ -35,23 +41,7 @@ class XboxController(object):
         self._monitor_thread.daemon = True
         self._monitor_thread.start()
 
-    def read(self):  # return the buttons/triggers that you care about in this methode
-        xl = self.LeftJoystickX
-        yl = self.LeftJoystickY
-        xr = self.RightJoystickX
-        yr = self.RightJoystickY
-        lt = self.LeftThumb
-        rt = self.RightThumb
-        a = self.A
-        b = self.B
-        x = self.X
-        y = self.Y
-        return {'LJ_X': xl, 'LJ_Y': yl, 'RJ_X': xr,
-                'RJ_Y': yr, 'LJ_T': lt, 'RJ_T': rt,
-                'A': a, 'B': b, 'X': x, 'Y': y,
-                'LT': round(self.LeftTrigger), 'RT': round(self.RightTrigger),
-                'LB': self.LeftBumper, 'RB': self.RightBumper}
-
+    @numba.njit()
     def _monitor_controller(self):
         while True:
             events = get_gamepad()
@@ -96,6 +86,30 @@ class XboxController(object):
                     self.UpDPad = event.state
                 elif event.code == 'BTN_TRIGGER_HAPPY4':
                     self.DownDPad = event.state
+
+    def read(self):  # return the buttons/triggers that you care about in this methode
+        """
+        Get a dictionary of controller input states.
+
+        :return: Dictionary of controller input states.
+        :rtype: dict
+        """
+
+        xl = self.LeftJoystickX
+        yl = self.LeftJoystickY
+        xr = self.RightJoystickX
+        yr = self.RightJoystickY
+        lt = self.LeftThumb
+        rt = self.RightThumb
+        a = self.A
+        b = self.B
+        x = self.X
+        y = self.Y
+        return {'LJ_X': xl, 'LJ_Y': yl, 'RJ_X': xr,
+                'RJ_Y': yr, 'LJ_T': lt, 'RJ_T': rt,
+                'A': a, 'B': b, 'X': x, 'Y': y,
+                'LT': round(self.LeftTrigger), 'RT': round(self.RightTrigger),
+                'LB': self.LeftBumper, 'RB': self.RightBumper}
 
 
 if __name__ == '__main__':

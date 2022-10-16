@@ -11,6 +11,7 @@ import sys
 import cv2
 from utils import HandTracker
 from threading import Thread
+from tellogui import *
 
 
 class MainWindow(QMainWindow):
@@ -89,10 +90,10 @@ class VideoFeed(QThread):
                                 thickness=2, color=(0, 255, 0))
 
                 # DRAW ROTATIONS
-                self.draw_rotation(frame, self.tello.get_yaw())
-                self.draw_roll(frame, self.tello.get_roll())
-                self.draw_pitch(frame, self.tello.get_pitch())
-                self.draw_velocity(frame, vel)
+                draw_rotation(frame, self.tello.get_yaw())
+                draw_roll(frame, self.tello.get_roll())
+                draw_pitch(frame, self.tello.get_pitch())
+                draw_velocity(frame, vel)
 
                 # CALCULATE FPS
                 new_frame_time = time.time()
@@ -114,41 +115,6 @@ class VideoFeed(QThread):
                 self.image_update.emit(qt_img)
             except Exception as error:
                 print(error)
-
-    @staticmethod
-    def draw_rotation(img: np.ndarray, degree):
-        center = (img.shape[1] - 50, img.shape[0] - 50)
-        cv2.circle(img, center=center, radius=30, color=(255, 255, 255))
-        cv2.circle(img, center=(center[0] + int(np.cos(np.deg2rad(degree)) * 30),
-                                int(center[1] + np.sin(np.deg2rad(degree)) * 30)),
-                   thickness=4, radius=4, color=(0, 0, 255))
-
-    @staticmethod
-    def draw_roll(img: np.ndarray, degree):
-        left = (img.shape[1] - 80, img.shape[0] - 150)
-        cv2.line(img, pt1=left, pt2=[img.shape[1] - 20, img.shape[0] - 150], color=(255, 255, 255))
-        cv2.circle(img, center=(img.shape[1] - 50 + int(-(60 * degree / 360)), img.shape[0] - 150), color=(0, 0, 255),
-                   radius=3, thickness=3)
-
-    @staticmethod
-    def draw_pitch(img: np.ndarray, degree):
-        bottom = (img.shape[1] - 50, img.shape[0] - 200)
-        cv2.line(img, pt1=bottom, pt2=[bottom[0], img.shape[0] - 260], color=(255, 255, 255))
-        cv2.circle(img, center=(bottom[0], img.shape[0] - 230 + int(-(60 * degree / 180))), color=(0, 0, 255),
-                   radius=3, thickness=3)
-
-    @staticmethod
-    def draw_velocity(img: np.ndarray, vel):
-        cv2.arrowedLine(img=img, pt1=[30, img.shape[0] - 30],
-                        pt2=[30 + vel[0], img.shape[0] - 30],
-                        color=(0, 0, 255), thickness=2)
-        cv2.arrowedLine(img=img, pt1=[30, img.shape[0] - 30],
-                        pt2=[30, img.shape[0] - 30 - vel[2]],
-                        color=(255, 0, 0), thickness=2)
-        cv2.arrowedLine(img=img, pt1=[30, img.shape[0] - 30],
-                        pt2=[30 + vel[1], img.shape[0] - 30 - vel[1]],
-                        color=(255, 255, 255), thickness=1)
-        cv2.circle(img, (30, img.shape[0] - 30), color=(0, 255, 0), thickness=1, radius=2)
 
     def stop(self):
         self.tello.streamoff()

@@ -1,17 +1,16 @@
 import time
-import random
 
 import cv2
-import mediapipe as mp
 from djitellopy import Tello
 from threading import Thread
 from queue import Queue
-from controller import XboxController
+from controllers.controller import XboxController
 import numpy as np
-from utils import HandTracker
+from utils import GestureControl, HandTracker, ControlType
+from tellogui import *
 
 
-def video_stream(tello: Tello, queue: Queue):
+def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
     tello.streamon()
     tello.set_video_fps(tello.FPS_30)
     tello.set_video_bitrate(tello.BITRATE_5MBPS)
@@ -26,6 +25,8 @@ def video_stream(tello: Tello, queue: Queue):
             vel = [tello.get_speed_x(), tello.get_speed_y(), tello.get_speed_z()]
 
             img = read.frame
+            frame_queue.put(img)
+
             img = tracker.hands_finder(img)
 
             center = [int(img.shape[1] / 2), int(img.shape[0] / 2)]
@@ -76,41 +77,6 @@ def video_stream(tello: Tello, queue: Queue):
             print(error)
 
 
-def draw_rotation(img: np.ndarray, degree):
-    center = (img.shape[1] - 50, img.shape[0] - 50)
-    cv2.circle(img, center=center, radius=30, color=(255, 0, 255))
-    cv2.circle(img, center=(center[0] + int(np.cos(np.deg2rad(degree)) * 30),
-                            int(center[1] + np.sin(np.deg2rad(degree)) * 30)),
-               thickness=4, radius=4, color=(255, 255, 255))
-
-
-def draw_roll(img: np.ndarray, degree):
-    left = (img.shape[1] - 80, img.shape[0] - 150)
-    cv2.line(img, pt1=left, pt2=[img.shape[1] - 20, img.shape[0] - 150], color=(255, 255, 255))
-    cv2.circle(img, center=(img.shape[1] - 50 + int(-(60 * degree / 360)), img.shape[0] - 150), color=(0, 0, 255),
-               radius=3, thickness=3)
-
-
-def draw_pitch(img: np.ndarray, degree):
-    bottom = (img.shape[1] - 50, img.shape[0] - 200)
-    cv2.line(img, pt1=bottom, pt2=[bottom[0], img.shape[0] - 260], color=(255, 255, 255))
-    cv2.circle(img, center=(bottom[0], img.shape[0] - 230 + int(-(60 * degree / 180))), color=(0, 0, 255),
-               radius=3, thickness=3)
-
-
-def draw_velocity(img: np.ndarray, vel):
-    cv2.arrowedLine(img=img, pt1=[30, img.shape[0] - 30],
-                    pt2=[30 + vel[0], img.shape[0] - 30],
-                    color=(0, 0, 255), thickness=2)
-    cv2.arrowedLine(img=img, pt1=[30, img.shape[0] - 30],
-                    pt2=[30, img.shape[0] - 30 - vel[2]],
-                    color=(255, 0, 0), thickness=2)
-    cv2.arrowedLine(img=img, pt1=[30, img.shape[0] - 30],
-                    pt2=[30 + vel[1], img.shape[0] - 30 - vel[1]],
-                    color=(255, 255, 255), thickness=1)
-    cv2.circle(img, (30, img.shape[0] - 30), color=(0, 255, 0), thickness=1, radius=2)
-
-
 def clear_queue(queue: Queue):
     while not queue.empty():
         queue.get()
@@ -122,14 +88,24 @@ def keep_alive(tello: Tello):
         time.sleep(10)
 
 
-def controller(tello: Tello, queue: Queue):
+def controller(tello: Tello, queue: Queue, frame_queue: Queue):
+    joy = None
     downwards_cam = False
-    using_controller = True
-    if using_controller:
-        joy = XboxController()
     tello.set_speed(100)
+
+    control_type = ControlType.gesture
+
+    classes = ['okay', 'peace', 'thumbs up', 'thumbs down',
+               'call me', 'stop', 'rock', 'live long', 'fist', 'smile']
+
+    gesture_control = GestureControl('mp_hand_gesture', classes)
+
+    if control_type == control_type.controller:
+        joy = XboxController()
+
     while True:
-        if using_controller:
+        if control_type == ControlType.controller:
+            if not joy: break
             input = joy.read()
             try:
                 tello.send_command_without_return(
@@ -154,7 +130,22 @@ def controller(tello: Tello, queue: Queue):
                     downwards_cam = not downwards_cam
             except Exception as exception:
                 print(exception)
-        else:
+        elif control_type == ControlType.gesture:
+            try:
+                gesture = gesture_control.predict(frame_queue.get())
+                print(gesture)
+                if gesture == 'rock':
+                    tello.send_command_without_return('takeoff')
+                elif gesture == 'thumbs up':
+                    tello.send_command_without_return('rc -50 0 0 0')
+                elif gesture == 'thumbs down':
+                    tello.send_command_without_return('rc 50 0 0 0')
+                else:
+                    tello.send_command_without_return('rc 0 0 0 0')
+            except Exception as e:
+                pass
+
+        elif control_type == ControlType.keyboard:
             key = queue.get()
             try:
                 if key == ord('w'):
@@ -179,6 +170,7 @@ def controller(tello: Tello, queue: Queue):
                     else:
                         tello.send_command_without_return('takeoff')
                 clear_queue(queue)
+                if frame_queue.qsize() > 10: clear_queue(frame_queue)
             except Exception as e:
                 print(f'[INFO] Command Failed: {e}')
     tello.land()
@@ -186,13 +178,14 @@ def controller(tello: Tello, queue: Queue):
 
 
 def main():
+    frame = Queue()
     queue = Queue()
     tello = Tello()
     tello.connect()
 
     threads = [
-        Thread(target=controller, args=(tello, queue)),
-        Thread(target=video_stream, args=(tello, queue))]
+        Thread(target=controller, args=(tello, queue, frame)),
+        Thread(target=video_stream, args=(tello, queue, frame))]
 
     for thread in threads:
         thread.start()

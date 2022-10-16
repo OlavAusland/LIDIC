@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
-from utils import detectQRCode, GestureControl
+from utils import detectQRCode, GestureControl, ControlType
 
 
 def main():
+    controller = ControlType.keyboard
+
+    """
     classes = ['okay', 'peace', 'thumbs up', 'thumbs down',
                'call me', 'stop', 'rock', 'live long', 'fist', 'smile']
     cap = cv2.VideoCapture(0)
@@ -18,6 +21,7 @@ def main():
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    """
 
 
 if __name__ == '__main__':

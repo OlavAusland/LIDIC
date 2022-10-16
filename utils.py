@@ -1,5 +1,5 @@
 from typing import List
-
+from enum import Enum
 import keras
 import mediapipe as mp
 import cv2
@@ -7,7 +7,24 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 
+class ControlType(Enum):
+    """
+    Enumerator class to switch beetween controller modes
+    """
+    controller = 0
+    keyboard = 1
+    gesture = 2
+
+
 class HandTracker:
+    """
+    The HandTracker object can detect hands in an image and return
+    the joint position of the hand.
+
+    :param max_hands: max hand returned in an image
+    :type max_hands: int
+    """
+
     def __init__(self, mode=False, max_hands=2, detection_con=0.5, model_complexity=1, track_con=0.5):
         self.mode = mode
         self.maxHands = max_hands
@@ -21,6 +38,13 @@ class HandTracker:
         self.results = None
 
     def hands_finder(self, image, draw=True):
+        """
+        Find number of hands in an image and save the result.
+
+        :param image: Image to operate on
+        :param draw: Choose if joints should be drawn on image
+        :return: return image as numpy.ndarray
+        """
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(image_rgb)
 
@@ -32,6 +56,15 @@ class HandTracker:
         return image
 
     def position_finder(self, image, hand_no=0, draw=True, append_id: bool = False):
+        """
+        Returns hand joints in image
+
+        :param image: image to operate on
+        :param hand_no: index of hand to operate on
+        :param draw: Should the function draw the joints on the image
+        :param append_id: if the hand joint id should be appended to the list
+        :return: List
+        """
         lmlist = []
         cx, cy = 0, 0
         if self.results.multi_hand_landmarks:
@@ -53,32 +86,46 @@ class HandTracker:
 class GestureControl:
     """
     The GestureControl object controls gesture recognition.
-
+    
     :param model: The model is used to locate where the model is.
-    :type string:
+    :type model: str
     :type model: str
     :param classes: Classes is used for the classification
     :
     """
+
     def __init__(self, model: str, classes: List[str], hand_tracker: HandTracker = HandTracker()):
         self.model: keras.Sequential = load_model(model)
         self.classes = classes
         self.hand_tracker = hand_tracker
 
-    def predict(self, frame: np.ndarray):
+    def predict(self, frame: np.ndarray) -> str:
+        """
+        Predict if what class is in a frame
+
+        :param frame: Ndarray to operate on
+        :return: class predicted
+        :rtype: string
+        """
         self.hand_tracker.hands_finder(frame, draw=False)
         landmarks = self.hand_tracker.position_finder(frame, hand_no=0, draw=False)
-        print('Here')
         if not landmarks:
-            return 'None'
-
+            return None
         prediction = self.model.predict([landmarks])
 
         class_id = np.argmax(prediction)
+
         return self.classes[class_id]
 
 
 def detectQRCode(frame: np.ndarray):
+    """
+    Detect a QR code in an image and draw bounding boxes
+
+    :param frame: Image to operate on
+    :return: Image as numpy.ndarray with bounding boxes
+    """
+
     image: np.ndarray = frame.copy()
     detector = cv2.QRCodeDetector()
 

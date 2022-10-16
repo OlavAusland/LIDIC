@@ -55,7 +55,7 @@ class HandTracker:
                     self.mpDraw.draw_landmarks(image, handLms, self.mpHands.HAND_CONNECTIONS)
         return image
 
-    def position_finder(self, image, hand_no=0, draw=True, append_id: bool = False):
+    def position_finder(self, image, hand_no=0, draw:bool=False, append_id: bool = False, normalized:bool = False):
         """
         Returns hand joints in image
 
@@ -71,7 +71,11 @@ class HandTracker:
             hand = self.results.multi_hand_landmarks[hand_no]
             for id, lm in enumerate(hand.landmark):
                 h, w, c = image.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
+
+                if normalized:
+                    cx, cy = lm.x, lm.y
+                else:
+                    cx, cy = int(lm.x * w), int(lm.y * h)
 
                 if append_id:
                     lmlist.append([id, cx, cy])

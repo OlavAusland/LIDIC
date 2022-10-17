@@ -133,7 +133,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
                 print(exception)
         elif control_type == ControlType.gesture:
             _, frame = cap.read()
-            gesture_controller(frame=frame_queue.get(), tello=tello,
+            gesture_controller(frame=frame, tello=tello,
                                gesture_control=gesture_control, debug=True)
             cv2.imshow('webcam', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):

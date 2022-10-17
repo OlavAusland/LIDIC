@@ -1,3 +1,4 @@
+from math import sqrt
 import cv2
 import numpy as np
 from utils import HandTracker, detect_qr_code
@@ -7,6 +8,7 @@ from tensorflow.keras.models import load_model, Sequential
 
 
 def train(cap: cv2.VideoCapture, tracker: HandTracker):
+    append = True
     recording = False
     label = 0
     dataset = list()
@@ -20,14 +22,20 @@ def train(cap: cv2.VideoCapture, tracker: HandTracker):
             for lm in landmarks:
                 cv2.circle(frame, lm, radius=2, thickness=1, color=(0, 255, 0))
 
-            cv2.putText(frame, f'Label: {label}', (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0))
+            cv2.putText(frame, f'Label: {label}', (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1,
+                        color=(0, 0, 0))
 
             landmarks = np.array(tracker.position_finder(frame, normalized=True)).flatten()
             landmarks = np.insert(landmarks, 0, label, axis=0)
             cv2.putText(frame, f'Recording: {recording}', (0, 100),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0))
             if recording:
-                dataset.append(landmarks)
+                if append:
+                    with open('data/data.csv', 'a', newline='') as file:
+                        write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                        write.writerow(landmarks)
+                else:
+                    dataset.append(landmarks)
 
         cv2.imshow('main', frame)
         key = cv2.waitKey(1) & 0xFF
@@ -38,13 +46,14 @@ def train(cap: cv2.VideoCapture, tracker: HandTracker):
             recording = not recording
         elif 48 <= key <= 57:
             label = chr(key)
-    with open('data/gesture_data.csv', 'w', newline='') as file:
-        write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-        write.writerows(dataset)
+    if not append:
+        with open('data/data.csv', 'w', newline='') as file:
+            write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+            write.writerows(dataset)
 
 
 def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
-    model: Sequential = load_model('models/4_model.h5')
+    model: Sequential = load_model('./models/4_model.h5')
     classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
 
     while True:
@@ -66,11 +75,17 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
                 for i, prediction in enumerate(np.squeeze(predictions)):
                     cv2.putText(frame, '{0:.2f}%'.format(prediction * 100), org=(0, 20 + int(height - (i * 10))),
                                 fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255), fontScale=0.25)
-                    cv2.rectangle(frame, (50, 15 + int(height - (i * 10))), (50 + int((width-50) * prediction), 20 + int(height - (i * 10))),
-                             color=(int(255 * prediction), int(255 * prediction), int(255 * prediction)), thickness=-1)
+                    cv2.rectangle(frame, (50, 15 + int(height - (i * 10))),
+                                  (50 + int((width - 50) * prediction), 20 + int(height - (i * 10))),
+                                  color=(int(255 * prediction), int(255 * prediction), int(255 * prediction)),
+                                  thickness=-1)
+                    cv2.putText(frame, f'{classes[i]}', org=(50 + int((width - 50) * prediction), 20 + int(height - (i * 10))),
+                                fontScale=0.25, fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255))
                 if predicted_class == 'pinch':
-                    cv2.line(frame, (int(lms[8][0] * frame.shape[1]), int(lms[8][1]*frame.shape[0])),
-                                     (int(lms[4][0] * frame.shape[1]), int(lms[4][1]*frame.shape[0])),
+                    distance = sqrt((lms[8][0] - lms[4][0]) ** 2 + (lms[8][1] - lms[4][1]) ** 2)
+                    # print(distance)
+                    cv2.line(frame, (int(lms[8][0] * frame.shape[1]), int(lms[8][1] * frame.shape[0])),
+                             (int(lms[4][0] * frame.shape[1]), int(lms[4][1] * frame.shape[0])),
                              color=(255, 0, 255), thickness=2)
         cv2.imshow('main', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -87,3 +102,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# 0 = stop, 1 = pinch, 2 = up, 3 = down, 4 = left, 5 = right, 6 = peace

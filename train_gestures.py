@@ -25,6 +25,8 @@ def create_model() -> keras.Sequential:
             layers.Dropout(0.2),
             layers.Dense(20, activation='relu'),
             layers.Dropout(0.4),
+            layers.Dense(20, activation='relu'),
+            layers.Dropout(0.4),
             layers.Dense(10, activation='relu'),
             layers.Dense(OUTPUT_SHAPE, activation='softmax')
         ]
@@ -67,10 +69,10 @@ def load_data(dataset: str):
 
 
 def main():
-    x_train, x_test, y_train, y_test = load_data('data/file.csv')
+    x_train, x_test, y_train, y_test = load_data('data/data.csv')
     model = create_model()
-    history = model.fit(x_train, y_train, epochs=1000, batch_size=128, validation_data=(x_test, y_test))
-    model.save('models/4_model.h5')
+    history = model.fit(x_train, y_train, epochs=1000, batch_size=64, validation_data=(x_test, y_test))
+    model.save('models/6_model.h5')
 
 
 if __name__ == '__main__':

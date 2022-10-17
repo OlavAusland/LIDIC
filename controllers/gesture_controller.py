@@ -21,7 +21,6 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
     }
 
     gesture = gesture_control.predict(frame)
-    print(gesture)
 
     if gesture:
         try:

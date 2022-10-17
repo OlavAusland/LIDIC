@@ -96,7 +96,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
     control_type = ControlType.gesture
 
-    classes = ['down', 'stop', 'left', 'right', 'up', 'down']
+    classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
 
     gesture_control = GestureControl('models/4_model.h5', classes)
 

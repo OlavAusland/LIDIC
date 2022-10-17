@@ -7,7 +7,7 @@ from tensorflow.keras import layers
 import csv
 
 INPUT_SHAPE = (42,)
-OUTPUT_SHAPE = 6
+OUTPUT_SHAPE = 7
 
 EPOCH_SIZE = 15
 BATCH_SIZE = 5
@@ -49,11 +49,12 @@ def create_advanced_model() -> keras.Sequential:
             layers.Dense(128, activation='relu'),
             layers.Dropout(0.5),
             layers.Dense(64, activation='relu'),
-            layers.Dense(NUM_OUTPUT, activation='softmax')
+            layers.Dense(OUTPUT_SHAPE, activation='softmax')
         ]
     )
     model.summary()
     model.compile('adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
     return model
 
 
@@ -66,9 +67,9 @@ def load_data(dataset: str):
 
 
 def main():
-    x_train, x_test, y_train, y_test = load_data('data/gesture_data_1.csv')
+    x_train, x_test, y_train, y_test = load_data('data/file.csv')
     model = create_model()
-    model.fit(x_train, y_train, epochs=1000, batch_size=128, validation_data=(x_test, y_test))
+    history = model.fit(x_train, y_train, epochs=1000, batch_size=128, validation_data=(x_test, y_test))
     model.save('models/4_model.h5')
 
 

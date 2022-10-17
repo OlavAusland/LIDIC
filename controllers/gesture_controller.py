@@ -16,23 +16,26 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
     """
 
     command = {
-        'thumbs up': f'rc {0} {0} {10} {0}', 'thumbs down': f'rc {0} {0} {-10} {0}',
-        'peace': f'rc {0}  {-10} {0} {0}', 'okay': f'rc {0} {10} {0} {0}'
+        'up': f'rc {0} {0} {50} {0}', 'down': f'rc {0} {0} {-50} {0}',
+        'left': f'rc {-50} {0} {0} {0}', 'right': f'rc {50} {0} {0} {0}'
     }
 
     gesture = gesture_control.predict(frame)
+    print(gesture)
 
     if gesture:
         try:
             if debug:
                 print(f'[DEBUG] Gesture ➡ {gesture}', end='\r')
 
-            if gesture == 'rock':  # takeoff / land
+            if gesture == 'stop':  # takeoff / land
                 if tello.is_flying:
-                    tello.send_command_without_return('land')
+                    tello.land()
                 else:
-                    tello.send_command_without_return('takeoff')
+                    tello.takeoff()
             elif gesture in command.keys():
                 tello.send_command_without_return(command[gesture])
+            else:
+                tello.send_command_without_return('rc 0 0 0 0')
         except Exception as error:
             print(f'[ERROR]: {error}')

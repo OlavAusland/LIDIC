@@ -96,14 +96,14 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
     control_type = ControlType.gesture
 
-    classes = ['okay', 'peace', 'thumbs up', 'thumbs down',
-               'call me', 'stop', 'rock', 'live long', 'fist', 'smile']
+    classes = ['down', 'stop', 'left', 'right', 'up', 'down']
 
-    gesture_control = GestureControl('mp_hand_gesture', classes)
+    gesture_control = GestureControl('models/4_model.h5', classes)
 
     if control_type == control_type.controller:
         joy = XboxController()
 
+    cap = cv2.VideoCapture(0)
     while True:
         if control_type == ControlType.controller:
             if not joy: break
@@ -132,8 +132,12 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
             except Exception as exception:
                 print(exception)
         elif control_type == ControlType.gesture:
+            _, frame = cap.read()
             gesture_controller(frame=frame_queue.get(), tello=tello,
                                gesture_control=gesture_control, debug=True)
+            cv2.imshow('webcam', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
         elif control_type == ControlType.keyboard:
             keyboard_controller(tello=tello, key_queue=key_queue)
     tello.land()

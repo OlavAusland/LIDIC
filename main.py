@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from utils import HandTracker
+from utils import HandTracker, detect_qr_code
 import pandas as pd
 import csv
 from tensorflow.keras.models import load_model, Sequential
@@ -32,26 +32,34 @@ def train(cap: cv2.VideoCapture, tracker: HandTracker):
             break
         elif 48 <= key <= 57:
             label = chr(key)
-    with open('gesture_data.csv', 'w', newline='') as file:
+    with open('data/gesture_data.csv', 'w', newline='') as file:
         write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         write.writerows(dataset)
 
 
 def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
-    model: Sequential = load_model('models/model.h5')
+    model: Sequential = load_model('models/4_model.h5')
 
     while True:
         _, frame = cap.read()
+        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) - 50
 
         tracker.hands_finder(frame)
         landmark = tracker.position_finder(frame, normalized=True)
 
         if landmark:
             landmark = np.array(landmark).reshape((42,))
-            prediction = model.predict(np.array([landmark]))
-            print(prediction)
-            cv2.putText(frame, str(np.argmax(np.squeeze(prediction))), (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            predictions = model.predict(np.array([landmark]))
+
+            cv2.putText(frame, str(np.argmax(np.squeeze(predictions))), (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                         fontScale=1, color=(0, 0, 0))
+            for i, prediction in enumerate(np.squeeze(predictions)):
+                cv2.putText(frame, '{0:.2f}%'.format(prediction * 100), org=(0, 20 + int(height - (i * 10))),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255), fontScale=0.25)
+                cv2.rectangle(frame, (50, 15 + int(height - (i * 10))), (50 + int((width-50) * prediction), 20 + int(height - (i * 10))),
+                         color=(int(255 * prediction), int(255 * prediction), int(255 * prediction)), thickness=-1)
+
         cv2.imshow('main', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

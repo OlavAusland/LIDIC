@@ -114,17 +114,18 @@ class GestureControl:
         :rtype: string
         """
         self.hand_tracker.hands_finder(frame, draw=False)
-        landmarks = self.hand_tracker.position_finder(frame, hand_no=0, draw=False)
+        landmarks = self.hand_tracker.position_finder(frame, normalized=True)
         if not landmarks:
             return None
-        prediction = self.model.predict([landmarks], verbose=debug)
+        landmark = np.array(landmarks).reshape((42,))
+        predictions = self.model.predict(np.array([landmark]))
 
-        class_id = np.argmax(prediction)
+        class_id = np.argmax(np.squeeze(predictions))
 
         return self.classes[class_id]
 
 
-def detectQRCode(frame: np.ndarray):
+def detect_qr_code(frame: np.ndarray):
     """
     Detect a QR code in an image and draw bounding boxes
 
@@ -135,11 +136,12 @@ def detectQRCode(frame: np.ndarray):
     image: np.ndarray = frame.copy()
     detector = cv2.QRCodeDetector()
 
-    image = cv2.cvtColor(src=image, dst=image, code=cv2.COLOR_BGR2GRAY)
+    # image = cv2.cvtColor(src=image, dst=image, code=cv2.COLOR_BGR2GRAY)
     text, points, _ = detector.detectAndDecode(image)
 
     if points is not None:
         for point in points[0]:
             image = cv2.circle(image, (int(point[0]), int(point[1])), 3, thickness=3, color=(0, 255, 0))
         image = cv2.polylines(image, np.int32([np.array(points[0])]), color=(0, 255, 0), isClosed=True, thickness=2)
+
     return image

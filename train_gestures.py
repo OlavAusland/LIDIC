@@ -6,7 +6,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import csv
 
-INPUT_SHAPE = (42,)
+INPUT_SHAPE = (21,)
 OUTPUT_SHAPE = 7
 
 EPOCH_SIZE = 15
@@ -60,8 +60,8 @@ def create_advanced_model() -> keras.Sequential:
     return model
 
 
-def load_data(dataset: str):
-    x_dataset = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(1, (21 * 2) + 1)))
+def load_data(dataset: str, columns: tuple):
+    x_dataset = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(columns[0], columns[1])))
     y_dataset = np.loadtxt(dataset, delimiter=',', dtype='int32', usecols=(0))
     x_train, x_test, y_train, y_test = train_test_split(x_dataset, y_dataset, train_size=0.75, random_state=42)
 
@@ -69,10 +69,11 @@ def load_data(dataset: str):
 
 
 def main():
-    x_train, x_test, y_train, y_test = load_data('data/data.csv')
+    # x_train, x_test, y_train, y_test = load_data('data/data.csv', (1, 43))
+    x_train, x_test, y_train, y_test = load_data('data/data_dist.csv', (1, INPUT_SHAPE[0]+1))
     model = create_model()
-    history = model.fit(x_train, y_train, epochs=1000, batch_size=64, validation_data=(x_test, y_test))
-    model.save('models/6_model.h5')
+    model.fit(x_train, y_train, epochs=1000, batch_size=64, validation_data=(x_test, y_test))
+    model.save('models/7_model.h5')
 
 
 if __name__ == '__main__':

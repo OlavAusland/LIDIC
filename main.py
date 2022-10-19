@@ -1,3 +1,4 @@
+import math
 from math import sqrt
 import cv2
 import numpy as np
@@ -66,6 +67,7 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
 
         if lms:
             landmark = np.array(lms).reshape((42,))
+
             predictions = model.predict(np.array([landmark]))
             predicted = np.argmax(np.squeeze(predictions))
             if np.squeeze(predictions)[predicted] > 0:
@@ -92,12 +94,109 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
             break
 
 
+def projection(cap: cv2.VideoCapture, tracker: HandTracker):
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    sharpen = np.array([[-1, -1, -1],
+                        [-1, 9, -1],
+                        [-1, -1, -1]])
+    while True:
+        _, frame = cap.read()
+        high: list = [0, 0]
+        low: list = [width, height]
+
+        tracker.hands_finder(frame, draw=False)
+
+        landmarks = tracker.position_finder(frame, hand_no=0)
+
+        for lm in landmarks:
+            if lm[0] < low[0]:
+                low[0] = lm[0]
+            if lm[1] < low[1]:
+                low[1] = lm[1]
+            if lm[0] > high[0]:
+                high[0] = lm[0]
+            if lm[1] > high[1]:
+                high[1] = lm[1]
+            frame = cv2.arrowedLine(frame, landmarks[0], lm,
+                                    color=(0, 0, math.dist(landmarks[0], lm)), thickness=1, tipLength=0.02)
+            cv2.circle(frame, lm, color=(0, 0, 255), radius=2)
+
+        cv2.rectangle(frame, low, high, color=(0, 0, 255))
+
+        pts1 = np.float32([low, [high[0], low[0]], [low[0], high[1]], high])
+        pts2 = np.float32([[0, 0], [high[0] - low[0], 0], [0, high[1] - low[1]], [high[0] - low[0], high[1] - low[1]]])
+        # pts2 = np.float32([[0, 0], [400, 0], [0, 600], [400, 600]])
+
+        # matrix = cv2.getPerspectiveTransform(pts1, pts2)
+
+        # result = cv2.warpPerspective(frame, matrix, (400, 600))
+        cv2.imshow('frame', frame)
+        # cv2.imshow('projection', result)
+        if ((high[0] - low[0]) > 0) and ((high[1] - low[1]) > 0):
+            cropped = frame[low[1]:high[1], low[0]:high[0]]
+            cropped = cv2.resize(cropped, (400, 400))
+            cropped = cv2.filter2D(cropped, -1, sharpen)
+            cropped = tracker.hands_finder(cropped, draw=True)
+            cv2.imshow('cropped', cropped)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
-
     # train(cap, tracker)
     predict_gesture(cap, tracker)
+    # projection(cap, tracker)
+    """
+    database = list()
+    with open('data/data.csv') as file:
+        csv_file = csv.reader(file)
+
+        for row in csv_file:
+            temp = list()
+            temp.append(row[0])
+            temp.extend([float(row[1]) - float(row[3]), float(row[2]) - float(row[4])])
+            for i in range(5, len(row), 2):
+                temp.append(math.dist([float(row[1]), float(row[2])], [float(row[i]), float(row[i+1])]))
+                print(i)
+            database.append(temp)
+
+    with open('data/data_dist.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(database)
+
+    """
+    """
+    database = list()
+
+    with open('data/data.csv') as file:
+        csv_file = csv.reader(file)
+
+        for row in csv_file:
+            temp = list()
+            temp.append(row[0])
+            for i in range(3, len(row), 2):
+                x = row[i] * -1 if row[1] > row[i] else row[i]
+                y = row[i+1] * -1 if row[2] > row[i+1] else row[i+1]
+                temp.extend([x, y])
+            database.append(temp)
+    with open('data/data_dist_signed.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(database)
+    """
+
+
+def landmark_to_distance(lms:list):
+    result = list()
+
+    result.extend([float(lms[0]) - float(lms[2]), float(lms[1]) - float(lms[3])])
+    for i in range(4, len(lms), 2):
+        result.append(math.dist([float(lms[0]), float(lms[1])], [float(lms[i]), float(lms[i+1])]))
+    return result
 
 
 if __name__ == '__main__':

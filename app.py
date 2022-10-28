@@ -13,6 +13,11 @@ from utils import HandTracker
 from threading import Thread
 from tellogui import *
 
+"""
+NOT AN IMPORTANT FILE, LOOK AWAY FROM THIS
+
+Integrated OpenCv with tkinter
+"""
 
 class MainWindow(QMainWindow):
     """

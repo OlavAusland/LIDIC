@@ -11,7 +11,7 @@ class ControlType(Enum):
     """
     Enumerator class to switch between controller modes.
     """
-    controller = 0
+    controller = 0  # xbox_controller
     keyboard = 1
     gesture = 2
 
@@ -55,7 +55,7 @@ class HandTracker:
                     self.mpDraw.draw_landmarks(image, handLms, self.mpHands.HAND_CONNECTIONS)
         return image
 
-    def position_finder(self, image, hand_no=0, draw:bool=False, append_id: bool = False, normalized:bool = False):
+    def position_finder(self, image, hand_no=0, draw: bool = False, append_id: bool = False, normalized: bool = False):
         """
         Returns hand joints in image
 

@@ -1,5 +1,7 @@
 import math
 from math import sqrt
+from typing import List
+
 import cv2
 import numpy as np
 from utils import HandTracker, detect_qr_code
@@ -8,29 +10,47 @@ import csv
 from tensorflow.keras.models import load_model, Sequential
 
 
-def train(cap: cv2.VideoCapture, tracker: HandTracker):
+def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker):
+    """
+    Will capture hand datapoints and save it to a csv file.
+
+    :param cap: Capture device
+    :param tracker: HandTracker object to detect the hand
+    :return: Nothing
+    """
     append = True
-    recording = False
-    label = 0
-    dataset = list()
+    recording = False  # If true it will add the points to the database
+    label = 0  # Choose which label will be written with the frame
+    dataset = list()  # Points and label will be writen to this file as a 1d array
 
     while True:
+        # read frame
         _, frame = cap.read()
         tracker.hands_finder(frame, False)
+
+        # get the landmarks from each joint as an array
         landmarks = tracker.position_finder(frame, normalized=False)
 
+        # check if a hand is detected
         if len(landmarks) > 0:
+            # foreach element in landmarks draw a circle at the position
             for lm in landmarks:
                 cv2.circle(frame, lm, radius=2, thickness=1, color=(0, 255, 0))
 
+            # write the current label being recorded to the window
             cv2.putText(frame, f'Label: {label}', (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1,
                         color=(0, 0, 0))
 
+            # get the points of the hand as normalized values and flatten the array to a 1d array, this might be
+            # will fix later :)
             landmarks = np.array(tracker.position_finder(frame, normalized=True)).flatten()
+            # add label to the first position - important for the training part!
             landmarks = np.insert(landmarks, 0, label, axis=0)
+            # write if you are recording to the screen
             cv2.putText(frame, f'Recording: {recording}', (0, 100),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0))
             if recording:
+                # if append is true append ot the csv file, if not overwrite the file
                 if append:
                     with open('data/data.csv', 'a', newline='') as file:
                         write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
@@ -47,20 +67,31 @@ def train(cap: cv2.VideoCapture, tracker: HandTracker):
             recording = not recording
         elif 48 <= key <= 57:
             label = chr(key)
+    # overwrite the data.csv file
     if not append:
         with open('data/data.csv', 'w', newline='') as file:
             write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             write.writerows(dataset)
 
 
-def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
-    model: Sequential = load_model('./models/4_model.h5')
-    classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
+def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker, model_path: str, classes: List[str]):
+    """
+    Predict gestures from a live feed using a capture device (default webcam).
+    :param classes: Classes which can be predicted
+    :param cap: Capture Device
+    :param tracker: Hand Tracker
+    :param model_path: Path to the model
+    :return:
+    """
+    # model to predict on
+    model: Sequential = load_model(model_path)
+    # NB! number of outputs of the model MUST be the same length as classes
 
     while True:
+        # read frames from device capture
         _, frame = cap.read()
         width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) - 50
+        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) - 50  # Why the fuck did I do -50, I don't fucking know
 
         tracker.hands_finder(frame)
         lms = tracker.position_finder(frame, normalized=True)
@@ -68,7 +99,9 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
         if lms:
             landmark = np.array(lms).reshape((42,))
 
+            # get probability of the classes predicted
             predictions = model.predict(np.array([landmark]))
+            # get the highest scored predicted index
             predicted = np.argmax(np.squeeze(predictions))
             if np.squeeze(predictions)[predicted] > 0:
                 predicted_class = classes[predicted]
@@ -81,7 +114,8 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
                                   (50 + int((width - 50) * prediction), 20 + int(height - (i * 10))),
                                   color=(int(255 * prediction), int(255 * prediction), int(255 * prediction)),
                                   thickness=-1)
-                    cv2.putText(frame, f'{classes[i]}', org=(50 + int((width - 50) * prediction), 20 + int(height - (i * 10))),
+                    cv2.putText(frame, f'{classes[i]}',
+                                org=(50 + int((width - 50) * prediction), 20 + int(height - (i * 10))),
                                 fontScale=0.25, fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255))
                 if predicted_class == 'pinch':
                     distance = sqrt((lms[8][0] - lms[4][0]) ** 2 + (lms[8][1] - lms[4][1]) ** 2)
@@ -95,21 +129,38 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker):
 
 
 def projection(cap: cv2.VideoCapture, tracker: HandTracker):
+    """
+    Projects a hand onto a canvas / window with constant height and width.
+
+
+    :param cap:
+    :param tracker:
+    :return:
+    """
+
+    # Define webcam (capture device) height and width
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+    # Create a sharp filter (kernel) to sharpen image after being projected
     sharpen = np.array([[-1, -1, -1],
                         [-1, 9, -1],
                         [-1, -1, -1]])
     while True:
+        # read frame from capture device
         _, frame = cap.read()
+
+        # define bounding box dimensions
         high: list = [0, 0]
         low: list = [width, height]
 
+        # find hands inside a frame
         tracker.hands_finder(frame, draw=False)
 
+        # find all the landmarks for the hand
         landmarks = tracker.position_finder(frame, hand_no=0)
 
+        # find the lowest and highest points for the bounding box
         for lm in landmarks:
             if lm[0] < low[0]:
                 low[0] = lm[0]
@@ -119,26 +170,27 @@ def projection(cap: cv2.VideoCapture, tracker: HandTracker):
                 high[0] = lm[0]
             if lm[1] > high[1]:
                 high[1] = lm[1]
-            frame = cv2.arrowedLine(frame, landmarks[0], lm,
-                                    color=(0, 0, math.dist(landmarks[0], lm)), thickness=1, tipLength=0.02)
-            cv2.circle(frame, lm, color=(0, 0, 255), radius=2)
 
+        # draw the bounding box
         cv2.rectangle(frame, low, high, color=(0, 0, 255))
 
         pts1 = np.float32([low, [high[0], low[0]], [low[0], high[1]], high])
         pts2 = np.float32([[0, 0], [high[0] - low[0], 0], [0, high[1] - low[1]], [high[0] - low[0], high[1] - low[1]]])
-        # pts2 = np.float32([[0, 0], [400, 0], [0, 600], [400, 600]])
+        pts2 = np.float32([[0, 0], [400, 0], [0, 600], [400, 600]])
 
-        # matrix = cv2.getPerspectiveTransform(pts1, pts2)
+        matrix = cv2.getPerspectiveTransform(pts1, pts2)
 
-        # result = cv2.warpPerspective(frame, matrix, (400, 600))
+        result = cv2.warpPerspective(frame, matrix, (400, 600))
         cv2.imshow('frame', frame)
         # cv2.imshow('projection', result)
         if ((high[0] - low[0]) > 0) and ((high[1] - low[1]) > 0):
+            # crop image based on highest and lowest value
             cropped = frame[low[1]:high[1], low[0]:high[0]]
+            # resize image such that the dimensions of x & y will be the same
             cropped = cv2.resize(cropped, (400, 400))
+            # apply the sharp filter to the resized image
             cropped = cv2.filter2D(cropped, -1, sharpen)
-            cropped = tracker.hands_finder(cropped, draw=True)
+            # cropped = tracker.hands_finder(cropped, draw=True)
             cv2.imshow('cropped', cropped)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -149,57 +201,28 @@ def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # train(cap, tracker)
-    predict_gesture(cap, tracker)
+    predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
     # projection(cap, tracker)
+
+
+def landmark_to_distance(landmarks: list):
     """
-    database = list()
-    with open('data/data.csv') as file:
-        csv_file = csv.reader(file)
-
-        for row in csv_file:
-            temp = list()
-            temp.append(row[0])
-            temp.extend([float(row[1]) - float(row[3]), float(row[2]) - float(row[4])])
-            for i in range(5, len(row), 2):
-                temp.append(math.dist([float(row[1]), float(row[2])], [float(row[i]), float(row[i+1])]))
-                print(i)
-            database.append(temp)
-
-    with open('data/data_dist.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerows(database)
-
-    """
-    """
-    database = list()
-
-    with open('data/data.csv') as file:
-        csv_file = csv.reader(file)
-
-        for row in csv_file:
-            temp = list()
-            temp.append(row[0])
-            for i in range(3, len(row), 2):
-                x = row[i] * -1 if row[1] > row[i] else row[i]
-                y = row[i+1] * -1 if row[2] > row[i+1] else row[i+1]
-                temp.extend([x, y])
-            database.append(temp)
-    with open('data/data_dist_signed.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerows(database)
+    Returns a list of distance between point 0 to all other points
+    :param landmarks:
+    :return:
     """
 
-
-def landmark_to_distance(lms:list):
     result = list()
 
-    result.extend([float(lms[0]) - float(lms[2]), float(lms[1]) - float(lms[3])])
-    for i in range(4, len(lms), 2):
-        result.append(math.dist([float(lms[0]), float(lms[1])], [float(lms[i]), float(lms[i+1])]))
+    result.extend([float(landmarks[0]) - float(landmarks[2]), float(landmarks[1]) - float(landmarks[3])])
+    for i in range(4, len(landmarks), 2):
+        result.append(
+            math.dist([float(landmarks[0]), float(landmarks[1])], [float(landmarks[i]), float(landmarks[i + 1])]))
     return result
 
 
 if __name__ == '__main__':
     main()
 
+# Labels
 # 0 = stop, 1 = pinch, 2 = up, 3 = down, 4 = left, 5 = right, 6 = peace

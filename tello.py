@@ -15,8 +15,9 @@ from controllers.keyboard_controller import keyboard_controller
 def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
     tello.streamon()
     tello.set_video_fps(tello.FPS_30)
-    tello.set_video_bitrate(tello.BITRATE_5MBPS)
-    tello.set_video_resolution(tello.RESOLUTION_480P)
+    tello.set_video_bitrate(tello.BITRATE_AUTO)
+    tello.set_video_resolution(tello.RESOLUTION_720P)  # 1280 x 720 pixels
+
     tracker = HandTracker()
     read = tello.get_frame_read()
     base_vector = [4, 2, 4]
@@ -26,15 +27,15 @@ def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
         try:
             vel = [tello.get_speed_x(), tello.get_speed_y(), tello.get_speed_z()]
 
-            img = read.frame
+            img = read.frame  # requests frame from drone real time
             frame_queue.put(img)
 
             img = tracker.hands_finder(img)
 
-            center = [int(img.shape[1] / 2), int(img.shape[0] / 2)]
+            center = (int(img.shape[1] / 2), int(img.shape[0] / 2))
 
             # crosshair
-            cv2.circle(img=img, center=(int(img.shape[1] / 2), int(img.shape[0] / 2)), color=(255, 255, 255), radius=2)
+            cv2.circle(img=img, center=center, color=(255, 255, 255), radius=2)
 
             cv2.putText(img, f"Battery: {str(tello.get_battery())}%", (20, 40),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255),
@@ -94,7 +95,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
     downwards_cam = False
     tello.set_speed(100)
 
-    control_type = ControlType.gesture
+    control_type = ControlType.keyboard  # change control type of tello
 
     classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
 
@@ -106,33 +107,35 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
     cap = cv2.VideoCapture(0)
     while True:
         if control_type == ControlType.controller:
-            if not joy: break
-            input = joy.read()
+            if joy:
+                control_type = ControlType.keyboard
+            _input = joy.read()
             try:
                 tello.send_command_without_return(
-                    f"rc {int(100 * input['LJ_X'])} {int(100 * input['LJ_Y'])} {int(100 * input['RJ_Y'])} {int(100 * input['RJ_X'])}")
+                    f"rc {int(100 * _input['LJ_X'])} {int(100 * _input['LJ_Y'])} {int(100 * _input['RJ_Y'])} {int(100 * _input['RJ_X'])}")
                 time.sleep(0.01)
 
-                if input['RJ_T']:
+                if _input['RJ_T']:
                     if tello.is_flying:
                         tello.land()
                     else:
                         tello.takeoff()
-                elif input['X']:
+                elif _input['X']:
                     tello.send_command_without_return('flip l')
-                elif input['B']:
+                elif _input['B']:
                     tello.send_command_without_return('flip r')
-                elif input['A']:
+                elif _input['A']:
                     tello.send_command_without_return('flip b')
-                elif input['Y']:
+                elif _input['Y']:
                     tello.send_command_without_return('flip f')
-                elif input['RB']:
+                elif _input['RB']:
                     tello.set_video_direction(int(downwards_cam))
                     downwards_cam = not downwards_cam
             except Exception as exception:
                 print(exception)
         elif control_type == ControlType.gesture:
-            _, frame = cap.read()
+            _, frame = cap.read()  # -> Use webcam frame
+            # frame = frame_queue.get() -> Use drone frame
             gesture_controller(frame=frame, tello=tello,
                                gesture_control=gesture_control, debug=True)
             cv2.imshow('webcam', frame)
@@ -146,13 +149,14 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
 def main():
     frame = Queue()
-    queue = Queue()
+    key_queue = Queue()
+
     tello = Tello()
     tello.connect()
 
     threads = [
-        Thread(target=controller, args=(tello, queue, frame)),
-        Thread(target=video_stream, args=(tello, queue, frame))]
+        Thread(target=controller, args=(tello, key_queue, frame)),
+        Thread(target=video_stream, args=(tello, key_queue, frame))]
 
     for thread in threads:
         thread.start()

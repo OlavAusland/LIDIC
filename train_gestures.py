@@ -38,7 +38,6 @@ def create_model() -> keras.Sequential:
 
 
 def create_advanced_model() -> keras.Sequential:
-
     """
     __DEPRECATED__!
     More advanced model which tries to predict accurately hand gestures with different distance,

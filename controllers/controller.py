@@ -1,7 +1,6 @@
 from inputs import get_gamepad
 import math
 import threading
-import numba
 from djitellopy import Tello
 
 
@@ -41,7 +40,6 @@ class XboxController(object):
         self._monitor_thread.daemon = True
         self._monitor_thread.start()
 
-    @numba.njit()
     def _monitor_controller(self):
         while True:
             events = get_gamepad()

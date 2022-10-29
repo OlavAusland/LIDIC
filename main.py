@@ -106,7 +106,7 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker, model_path: str
             if np.squeeze(predictions)[predicted] > 0:
                 predicted_class = classes[predicted]
                 cv2.putText(frame, predicted_class, (0, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=1, color=(0, 0, 0))
+                            fontScale=1.5, thickness=2, color=(0, 0, 0))
                 for i, prediction in enumerate(np.squeeze(predictions)):
                     cv2.putText(frame, '{0:.2f}%'.format(prediction * 100), org=(0, 20 + int(height - (i * 10))),
                                 fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255), fontScale=0.25)

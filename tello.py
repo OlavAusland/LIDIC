@@ -12,7 +12,11 @@ from controllers.gesture_controller import gesture_controller
 from controllers.keyboard_controller import keyboard_controller
 
 
+EXIT = False
+
+
 def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
+    global EXIT
     tello.streamon()
     tello.set_video_fps(tello.FPS_30)
     tello.set_video_bitrate(tello.BITRATE_AUTO)
@@ -23,6 +27,8 @@ def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
     base_vector = [4, 2, 4]
     prev_frame_time = 0
     while True:
+        if EXIT:
+            break
         # velocity
         try:
             vel = [tello.get_speed_x(), tello.get_speed_y(), tello.get_speed_z()]
@@ -91,11 +97,12 @@ def keep_alive(tello: Tello):
 
 
 def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
+    global EXIT
     joy = None
     downwards_cam = False
     tello.set_speed(100)
 
-    control_type = ControlType.controller  # change control type of tello
+    control_type = ControlType.gesture  # change control type of tello
 
     classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
 
@@ -106,7 +113,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
     cap = cv2.VideoCapture(0)
     while True:
-        if control_type == ControlType.controller:
+        if control_type == ControlType.controller and (joy is not None):
             _input = joy.read()
             try:
                 tello.send_command_without_return(
@@ -137,10 +144,11 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
             gesture_controller(frame=frame, tello=tello,
                                gesture_control=gesture_control, debug=True)
             cv2.imshow('webcam', frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
         elif control_type == ControlType.keyboard:
             keyboard_controller(tello=tello, key_queue=key_queue)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            EXIT = True
+            break
     tello.land()
     cv2.destroyWindow('DRONE - FEED')
 

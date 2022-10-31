@@ -3,10 +3,12 @@ from utils import GestureControl
 import numpy as np
 
 
-def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: GestureControl, debug: bool = False):
+def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: GestureControl, threshold: float = 0.5,
+                       debug: bool = False):
     """
     Control the drone using gestures.
 
+    :param threshold: Minimum value / probability for drone to react to gesture
     :param debug: Decide if the predicted gesture should be printed
     :param frame: Image to predict the frame on
     :type frame: np.ndarray
@@ -20,9 +22,9 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
         'left': f'rc {-50} {0} {0} {0}', 'right': f'rc {50} {0} {0} {0}'
     }
 
-    gesture = gesture_control.predict(frame)
-
-    if gesture:
+    gesture, probability = gesture_control.predict(frame)
+    print(probability)
+    if gesture and probability >= threshold:
         try:
             if debug:
                 print(f'[DEBUG] Gesture ➡ {gesture}', end='\r')
@@ -38,3 +40,5 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
                 tello.send_command_without_return('rc 0 0 0 0')
         except Exception as error:
             print(f'[ERROR]: {error}')
+    else:
+        tello.send_command_without_return('rc 0 0 0 0')

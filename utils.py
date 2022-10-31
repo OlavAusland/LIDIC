@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Tuple
 from enum import Enum
 import keras
 import mediapipe as mp
@@ -103,7 +103,7 @@ class GestureControl:
         self.classes = classes
         self.hand_tracker = hand_tracker
 
-    def predict(self, frame: np.ndarray, debug: bool = False) -> Union[str, None]:
+    def predict(self, frame: np.ndarray, debug: bool = False) -> Tuple[Union[str, None], Union[int, None]]:
         """
         Predict if what class is in a frame
 
@@ -116,13 +116,12 @@ class GestureControl:
         self.hand_tracker.hands_finder(frame, draw=False)
         landmarks = self.hand_tracker.position_finder(frame, normalized=True)
         if not landmarks:
-            return None
+            return None, None
         landmark = np.array(landmarks).reshape((42,))
         predictions = self.model.predict(np.array([landmark]))
 
         class_id = np.argmax(np.squeeze(predictions))
-
-        return self.classes[class_id]
+        return self.classes[class_id], np.max(np.squeeze(predictions))
 
 
 def detect_qr_code(frame: np.ndarray):

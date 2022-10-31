@@ -201,8 +201,8 @@ def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # train(cap, tracker)
-    predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
-    # projection(cap, tracker)
+    # predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
+    projection(cap, tracker)
 
 
 def landmark_to_distance(landmarks: list):

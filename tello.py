@@ -95,7 +95,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
     downwards_cam = False
     tello.set_speed(100)
 
-    control_type = ControlType.keyboard  # change control type of tello
+    control_type = ControlType.controller  # change control type of tello
 
     classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
 
@@ -107,8 +107,6 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
     cap = cv2.VideoCapture(0)
     while True:
         if control_type == ControlType.controller:
-            if joy:
-                control_type = ControlType.keyboard
             _input = joy.read()
             try:
                 tello.send_command_without_return(

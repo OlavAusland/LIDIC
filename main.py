@@ -1,7 +1,7 @@
 import math
 from math import sqrt
 from typing import List
-
+import time
 import cv2
 import numpy as np
 from utils import HandTracker, detect_qr_code
@@ -23,7 +23,6 @@ def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'd
     recording = False  # If true it will add the points to the database
     label = 0  # Choose which label will be written with the frame
     dataset = list()  # Points and label will be writen to this file as a 1d array
-
     while True:
         # read frame
         _, frame = cap.read()
@@ -68,6 +67,7 @@ def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'd
             recording = not recording
         elif 48 <= key <= 57:
             label = chr(key)
+        time.sleep(0.25)
     # overwrite the data.csv file
     if not append:
         with open(output, 'w', newline='') as file:

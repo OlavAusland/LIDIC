@@ -75,6 +75,31 @@ def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'd
             write.writerows(dataset)
 
 
+def predict_multiple_gestures(cap: cv2.VideoCapture, tracker: HandTracker, model_path):
+    model: Sequential = load_model(model_path)
+
+    while True:
+        _, frame = cap.read()
+
+        tracker.hands_finder(frame)
+        if tracker.results.multi_hand_landmarks is None:
+            continue
+
+        result = []
+        for i in range(0, len(tracker.results.multi_hand_landmarks)):
+            lms = tracker.position_finder(frame, hand_no=i, normalized=True)
+
+            if lms:
+                landmark = np.array(lms).reshape((42,))
+                predictions = model.predict(np.array([landmark]))
+                predicted = np.argmax(np.squeeze(predictions))
+                result.append(predicted)
+        print(result)
+        cv2.imshow('main', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker, model_path: str, classes: List[str]):
     """
     Predict gestures from a live feed using a capture device (default webcam).
@@ -221,8 +246,9 @@ def triangle_detection(cap: cv2.VideoCapture):
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
-    create_dataset(cap, tracker, append=True, output='data/gestures/jeanett.csv')
-    # predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
+    # create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
+    predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'left', 'right', 'undefined'])
+    # predict_multiple_gestures(cap, tracker, './models/7_model.h5')
     # projection(cap, tracker)
     # triangle_detection(cap)
 

@@ -104,9 +104,9 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
     control_type = ControlType.gesture  # change control type of tello
 
-    classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
-
-    gesture_control = GestureControl('models/4_model.h5', classes)
+    # classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
+    classes = ['stop', 'undefined', 'up', 'down', 'left', 'right', 'undefined']
+    gesture_control = GestureControl('models/7_model.h5', classes)
 
     if control_type == control_type.controller:
         joy = XboxController()
@@ -141,7 +141,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
         elif control_type == ControlType.gesture:
             _, frame = cap.read()  # -> Use webcam frame
             drone_frame = frame_queue.get()  # -> Use drone frame
-            gesture_controller(frame=drone_frame, tello=tello,
+            gesture_controller(frame=frame, tello=tello,
                                gesture_control=gesture_control, debug=True)
             cv2.imshow('webcam', frame)
         elif control_type == ControlType.keyboard:

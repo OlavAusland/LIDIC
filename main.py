@@ -10,15 +10,16 @@ import csv
 from tensorflow.keras.models import load_model, Sequential
 
 
-def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker):
+def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'data.csv', append: bool = True):
     """
     Will capture hand datapoints and save it to a csv file.
 
+    :param append: If the function should override the file or just append at the end
+    :param output: File to write data to
     :param cap: Capture device
     :param tracker: HandTracker object to detect the hand
     :return: Nothing
     """
-    append = True
     recording = False  # If true it will add the points to the database
     label = 0  # Choose which label will be written with the frame
     dataset = list()  # Points and label will be writen to this file as a 1d array
@@ -52,7 +53,7 @@ def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker):
             if recording:
                 # if append is true append ot the csv file, if not overwrite the file
                 if append:
-                    with open('data/data.csv', 'a', newline='') as file:
+                    with open(output, 'a', newline='') as file:
                         write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
                         write.writerow(landmarks)
                 else:
@@ -69,7 +70,7 @@ def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker):
             label = chr(key)
     # overwrite the data.csv file
     if not append:
-        with open('data/data.csv', 'w', newline='') as file:
+        with open(output, 'w', newline='') as file:
             write = csv.writer(file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             write.writerows(dataset)
 
@@ -220,10 +221,10 @@ def triangle_detection(cap: cv2.VideoCapture):
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
-    # train(cap, tracker)
+    create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
     # predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
     # projection(cap, tracker)
-    triangle_detection(cap)
+    # triangle_detection(cap)
 
 
 def landmark_to_distance(landmarks: list):

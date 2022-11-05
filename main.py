@@ -197,12 +197,33 @@ def projection(cap: cv2.VideoCapture, tracker: HandTracker):
             break
 
 
+def triangle_detection(cap: cv2.VideoCapture):
+    while True:
+        _, frame = cap.read()
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        _, threshold = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+        for contour in contours:
+            approx = cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), True)
+            print(len(approx))
+            if len(approx) == 3:
+                frame = cv2.drawContours(frame, [contour], -1, (0, 255, 255), 3)
+        cv2.imshow('Detected', frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # train(cap, tracker)
     # predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
-    projection(cap, tracker)
+    # projection(cap, tracker)
+    triangle_detection(cap)
 
 
 def landmark_to_distance(landmarks: list):

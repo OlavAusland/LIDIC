@@ -17,6 +17,7 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
     :param gesture_control: GestureControl object which performs the guessing
     """
 
+    # key value pair for gesture -> command
     command = {
         'up': f'rc {0} {0} {50} {0}', 'down': f'rc {0} {0} {-50} {0}',
         'left': f'rc {-50} {0} {0} {0}', 'right': f'rc {50} {0} {0} {0}'
@@ -40,5 +41,5 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
                 tello.send_command_without_return('rc 0 0 0 0')
         except Exception as error:
             print(f'[ERROR]: {error}')
-    else:
+    elif tello.is_flying:
         tello.send_command_without_return('rc 0 0 0 0')

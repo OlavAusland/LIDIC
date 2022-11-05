@@ -140,8 +140,8 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
                 print(exception)
         elif control_type == ControlType.gesture:
             _, frame = cap.read()  # -> Use webcam frame
-            # frame = frame_queue.get() -> Use drone frame
-            gesture_controller(frame=frame, tello=tello,
+            drone_frame = frame_queue.get()  # -> Use drone frame
+            gesture_controller(frame=drone_frame, tello=tello,
                                gesture_control=gesture_control, debug=True)
             cv2.imshow('webcam', frame)
         elif control_type == ControlType.keyboard:

@@ -221,7 +221,7 @@ def triangle_detection(cap: cv2.VideoCapture):
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
-    create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
+    create_dataset(cap, tracker, append=True, output='data/gestures/jeanett.csv')
     # predict_gesture(cap, tracker, './models/4_model.h5', ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch'])
     # projection(cap, tracker)
     # triangle_detection(cap)

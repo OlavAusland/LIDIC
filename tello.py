@@ -10,7 +10,7 @@ from utils import GestureControl, HandTracker, ControlType
 from tellogui import *
 from controllers.gesture_controller import gesture_controller
 from controllers.keyboard_controller import keyboard_controller
-
+from tensorflow.keras.models import load_model, Sequential
 
 EXIT = False
 
@@ -101,6 +101,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
     joy = None
     downwards_cam = False
     tello.set_speed(100)
+    model: Sequential = load_model('./models/7_model.h5')
 
     control_type = ControlType.gesture  # change control type of tello
 
@@ -142,7 +143,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
             _, frame = cap.read()  # -> Use webcam frame
             drone_frame = frame_queue.get()  # -> Use drone frame
             gesture_controller(frame=frame, tello=tello,
-                               gesture_control=gesture_control, debug=True)
+                               gesture_control=gesture_control, model=model, debug=True)
             cv2.imshow('webcam', frame)
         elif control_type == ControlType.keyboard:
             keyboard_controller(tello=tello, key_queue=key_queue)

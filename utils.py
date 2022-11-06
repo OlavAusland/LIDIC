@@ -103,10 +103,11 @@ class GestureControl:
         self.classes = classes
         self.hand_tracker = hand_tracker
 
-    def predict(self, frame: np.ndarray, debug: bool = False) -> Tuple[Union[str, None], Union[int, None]]:
+    def predict(self, frame: np.ndarray, debug: bool = False, return_predictions: bool = False):
         """
         Predict if what class is in a frame
 
+        :param return_predictions: Whetever to return index or class prediction
         :param debug: Print time used to predict a frame
         :type debug: bool
         :param frame: Ndarray to operate on
@@ -121,6 +122,8 @@ class GestureControl:
         predictions = self.model.predict(np.array([landmark]))
 
         class_id = np.argmax(np.squeeze(predictions))
+        if return_predictions:
+            return predictions
         return self.classes[class_id], np.max(np.squeeze(predictions))
 
 

@@ -78,6 +78,12 @@ def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'd
 def predict_multiple_gestures(cap: cv2.VideoCapture, tracker: HandTracker, model_path):
     model: Sequential = load_model(model_path)
 
+    commands = {
+        '0': f'rc {0} {0} {0} {0}', '4': f'rc {0} {0} {0} {0}', '2': f'rc {0} {0} {0} {0}',
+        '5': f'rc {0} {0} {0} {0}', '3': f'rc {0} {0} {0} {0}', '0-4': f'rc {0} {0} {0} {-50}',
+        '0-5': f'rc {0} {0} {0} {50}'
+    }
+
     while True:
         _, frame = cap.read()
 
@@ -85,7 +91,7 @@ def predict_multiple_gestures(cap: cv2.VideoCapture, tracker: HandTracker, model
         if tracker.results.multi_hand_landmarks is None:
             continue
 
-        result = []
+        result: list = []
         for i in range(0, len(tracker.results.multi_hand_landmarks)):
             lms = tracker.position_finder(frame, hand_no=i, normalized=True)
 
@@ -93,8 +99,12 @@ def predict_multiple_gestures(cap: cv2.VideoCapture, tracker: HandTracker, model
                 landmark = np.array(lms).reshape((42,))
                 predictions = model.predict(np.array([landmark]))
                 predicted = np.argmax(np.squeeze(predictions))
-                result.append(predicted)
-        print(result)
+                result.append(int(predicted))
+        key = '-'.join(str(e) for e in sorted(result))
+
+        if key in commands.keys():
+            print(result)
+            print(commands[key])
         cv2.imshow('main', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

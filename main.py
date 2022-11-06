@@ -8,6 +8,7 @@ from utils import HandTracker, detect_qr_code
 import pandas as pd
 import csv
 from tensorflow.keras.models import load_model, Sequential
+import face_recognition
 
 
 def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'data.csv', append: bool = True):
@@ -253,6 +254,21 @@ def triangle_detection(cap: cv2.VideoCapture):
             break
 
 
+def detect_face(cap: cv2.VideoCapture):
+
+    while True:
+        _, frame = cap.read()
+        face = face_recognition.face_locations(frame)
+        if len(face) > 0:
+            face = face[0]
+            cv2.rectangle(frame, (face[3], face[0]), (face[1], face[2]), (255, 0, 255), 2)
+
+        cv2.imshow('test', frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
@@ -261,6 +277,7 @@ def main():
     # predict_multiple_gestures(cap, tracker, './models/7_model.h5')
     # projection(cap, tracker)
     # triangle_detection(cap)
+    # detect_face(cap)
 
 
 def landmark_to_distance(landmarks: list):

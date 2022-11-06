@@ -25,7 +25,7 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
     commands = {
         '4': f'rc {-25} {0} {0} {0}', '2': f'rc {0} {0} {25} {0}',
         '5': f'rc {25} {0} {0} {0}', '3': f'rc {0} {0} {-25} {0}', '0-4': f'rc {0} {0} {0} {-100}',
-        '0-5': f'rc {0} {0} {0} {100}', '0-2': f'rc {0} {100} {0} {0}', '0-3': f'rc {0} {-100} {0} {0}'
+        '0-5': f'rc {0} {0} {0} {100}', '0-2': f'rc {0} {25} {0} {0}', '0-3': f'rc {0} {-25} {0} {0}'
     }
 
     tracker.hands_finder(frame)

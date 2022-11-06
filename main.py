@@ -273,7 +273,7 @@ def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
-    predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'left', 'right', 'undefined'])
+    predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'le        ft', 'right', 'undefined'])
     # predict_multiple_gestures(cap, tracker, './models/7_model.h5')
     # projection(cap, tracker)
     # triangle_detection(cap)

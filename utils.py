@@ -1,10 +1,12 @@
+from tensorflow.keras.models import load_model
 from typing import List, Union, Tuple
 from enum import Enum
-import keras
+
+import face_recognition
 import mediapipe as mp
-import cv2
 import numpy as np
-from tensorflow.keras.models import load_model
+import keras
+import cv2
 
 
 class ControlType(Enum):
@@ -147,3 +149,30 @@ def detect_qr_code(frame: np.ndarray):
         image = cv2.polylines(image, np.int32([np.array(points[0])]), color=(0, 255, 0), isClosed=True, thickness=2)
 
     return image
+
+
+def detect_face(frame: np.ndarray, draw: bool = False) -> Union[Union[Tuple, Tuple, Tuple], Union[None, None, None]]:
+    """
+
+    :param frame: Frame to find face
+    :return: (x1, y1) & (x2, y2) to represent a bounding box
+    """
+    face = face_recognition.face_locations(frame)
+    if len(face) > 0:
+        face = face[0]
+        if draw:
+            cv2.rectangle(frame, (face[3], face[0]), (face[1], face[2]), (255, 0, 255), 2)
+        return (face[3], face[0]), (face[1], face[2]), \
+               (face[1] - int((face[1] - face[3]) / 2), face[2] - int((face[2] - face[0]) / 2))
+    return None, None, None
+
+
+def in_boundary(delta_x: int, delta_y: int, frame_center: tuple, point: tuple) -> Union[bool, Tuple]:
+    if None in [delta_x, delta_y, frame_center, point]:
+        return False, None
+
+    if frame_center[0] - delta_x < point[0] < frame_center[0] + delta_x:
+        if frame_center[1] - delta_y < point[1] < frame_center[1] + delta_y:
+            return True, None
+    return False, (frame_center[0] - delta_x > point[0], frame_center[1] - delta_y > point[1],
+                   frame_center[0] + delta_x < point[0], frame_center[1] + delta_y < point[1])

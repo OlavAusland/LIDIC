@@ -1,6 +1,6 @@
 import math
 from math import sqrt
-from typing import List
+from typing import List, Union, Tuple
 import time
 import cv2
 import numpy as np
@@ -9,6 +9,8 @@ import pandas as pd
 import csv
 from tensorflow.keras.models import load_model, Sequential
 import face_recognition
+from utils import detect_face
+from scipy.spatial import distance
 
 
 def create_dataset(cap: cv2.VideoCapture, tracker: HandTracker, output: str = 'data.csv', append: bool = True):
@@ -155,7 +157,7 @@ def predict_gesture(cap: cv2.VideoCapture, tracker: HandTracker, model_path: str
                                 org=(50 + int((width - 50) * prediction), 20 + int(height - (i * 10))),
                                 fontScale=0.25, fontFace=cv2.FONT_HERSHEY_SIMPLEX, color=(255, 255, 255))
                 if predicted_class == 'pinch':
-                    distance = sqrt((lms[8][0] - lms[4][0]) ** 2 + (lms[8][1] - lms[4][1]) ** 2)
+                    dist = sqrt((lms[8][0] - lms[4][0]) ** 2 + (lms[8][1] - lms[4][1]) ** 2)
                     # print(distance)
                     cv2.line(frame, (int(lms[8][0] * frame.shape[1]), int(lms[8][1] * frame.shape[0])),
                              (int(lms[4][0] * frame.shape[1]), int(lms[4][1] * frame.shape[0])),
@@ -254,30 +256,54 @@ def triangle_detection(cap: cv2.VideoCapture):
             break
 
 
-def detect_face(cap: cv2.VideoCapture):
-
-    while True:
-        _, frame = cap.read()
-        face = face_recognition.face_locations(frame)
-        if len(face) > 0:
-            face = face[0]
-            cv2.rectangle(frame, (face[3], face[0]), (face[1], face[2]), (255, 0, 255), 2)
-
-        cv2.imshow('test', frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
-    predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'le        ft', 'right', 'undefined'])
+    # predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'lesft', 'right', 'undefined'])
     # predict_multiple_gestures(cap, tracker, './models/7_model.h5')
     # projection(cap, tracker)
     # triangle_detection(cap)
-    # detect_face(cap)
+    frame_center = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) // 2), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2))
+    # to_distance()
+    
+    while True:
+        _, frame = cap.read()
+        cv2.flip(frame, 1)
+        _, _, center = detect_face(frame)
+
+        if center is not None:
+            cv2.rectangle(img=frame, pt1=(frame_center[0]-50, frame_center[1]-50),
+                          pt2=(frame_center[0]+50, frame_center[1]+50),
+                          color=(255, 255, 255), thickness=1)
+            cv2.circle(img=frame, center=center, thickness=-1, color=(0,255,255),   radius=2)
+
+        print(in_boundary(50, 50, frame_center, center))
+        cv2.imshow('image', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
+def to_distance():
+    result = np.empty((0, 22), dtype=np.float)
+    with open('./data/gestures/merged.csv', 'r') as file:
+        reader = csv.reader(file)
+
+        for i, line in enumerate(reader):
+            label = line[0]
+            line = line[1:]
+            origo = np.array((float(line[0]), float(line[1])))
+
+            row = np.array([label])
+            for i in range(0, len(line), 2):
+                row = np.append(row, distance.euclidean(origo, np.array((float(line[i]), float(line[i+1])))))
+                # print(f'{i} - ({line[i]}, {line[i+1]}) ')
+            result = np.vstack((result, row))
+        file.close()
+    with open('./data/gestures/merged_distance.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(result)
+    print(result)
 
 
 def landmark_to_distance(landmarks: list):

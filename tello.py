@@ -6,7 +6,7 @@ from threading import Thread
 from queue import Queue
 from controllers.controller import XboxController
 import numpy as np
-from utils import GestureControl, HandTracker, ControlType
+from utils import GestureControl, HandTracker, ControlType, in_boundary, detect_face
 from tellogui import *
 from controllers.gesture_controller import gesture_controller
 from controllers.keyboard_controller import keyboard_controller
@@ -111,7 +111,6 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
     if control_type == control_type.controller:
         joy = XboxController()
-
     cap = cv2.VideoCapture(0)
     while True:
         if control_type == ControlType.controller and (joy is not None):
@@ -141,9 +140,33 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
                 print(exception)
         elif control_type == ControlType.gesture:
             _, frame = cap.read()  # -> Use webcam frame
-            drone_frame = frame_queue.get()  # -> Use drone frame
+            drone_frame: np.ndarray = frame_queue.get()     # -> Use drone frame
             gesture_controller(frame=frame, tello=tello,
                                gesture_control=gesture_control, model=model, debug=True)
+
+            """
+            _, _, center = detect_face(drone_frame)
+            if center is not None:
+                frame_center = (int(drone_frame.shape[1] // 2), int(drone_frame.shape[0] // 2))
+                cv2.rectangle(img=drone_frame, pt1=(frame_center[0] - 50, frame_center[1] - 50),
+                              pt2=(frame_center[0] + 50, frame_center[1] + 50),
+                              color=(255, 255, 255), thickness=1)
+                cv2.circle(img=drone_frame, center=center, thickness=-1, color=(0, 255, 255), radius=2)
+                in_bounds, direction = in_boundary(50, 50, frame_center, center)
+
+                print(in_bounds, direction)
+                if not in_bounds:
+                    if direction[0]:
+                        tello.send_command_without_return(f'rc {100} {0} {0} {0}')
+                    elif direction[1]:
+                        tello.send_command_without_return(f'rc {0} {0} {100} {0}')
+                    elif direction[2]:
+                        tello.send_command_without_return(f'rc {-100} {0} {0} {0}')
+                    elif direction[3]:
+                        tello.send_command_without_return(f'rc {0} {0} {-100} {0}')
+                else:
+                    tello.send_command_without_return(f'rc {0} {0} {0} {0}')
+            """
             cv2.imshow('webcam', frame)
         elif control_type == ControlType.keyboard:
             keyboard_controller(tello=tello, key_queue=key_queue)

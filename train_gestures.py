@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import cv2 as cv
 import numpy as np
@@ -80,12 +81,17 @@ def load_data(dataset: str, columns: tuple):
 
     return x_train, x_test, y_train, y_test
 
+
 def main():
     x_train, x_test, y_train, y_test = load_data('data/gestures/merged.csv', (1, INPUT_SHAPE[0]+1))
-    #x_train, x_test, y_train, y_test = load_data('data/gestures/olav.csv', (1, INPUT_SHAPE[0]+1))
+    # x_train, x_test, y_train, y_test = load_data('data/gestures/olav.csv', (1, INPUT_SHAPE[0]+1))
     model = create_model()
-    model.fit(x_train, y_train, epochs=1000, batch_size=64, validation_data=(x_test, y_test))
-    model.save('models/7_model.h5')
+    logdir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logdir)
+
+    model.fit(x_train, y_train, epochs=1000, batch_size=64, validation_data=(x_test, y_test),
+              callbacks=[tensorboard_callback])
+    model.save('models/test.h5')
 
 
 if __name__ == '__main__':

@@ -19,32 +19,88 @@ NOT AN IMPORTANT FILE, LOOK AWAY FROM THIS
 Integrated OpenCv with tkinter
 """
 
+
 class MainWindow(QMainWindow):
     """
     Tello video stream and control integrated into a tkinter window.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.tello = Tello()
-        self.tello.connect()
+        # self.tello.connect()
         self.setGeometry(640, 480, 640, 480)
-        self.container = QHBoxLayout(self)
+        self.container = QVBoxLayout(self)
 
-        self.preview = QLabel(self)
-        self.preview.setAlignment(Qt.AlignTop)
-        # feed worker
-        self.feed = VideoFeed(self)
+        # tello preview
+        self.tello_preview = QLabel(self)
+        # webcam preview
+        self.webcam_preview = QLabel(self)
+
+        # tello feed worker
+        self.tello_feed = VideoFeed(self)
+        # webcam feed worker
+        self.camera_feed = CameraFeed(self)
+
+        self.feed_widget = QWidget()
+        self.feed_layout = QHBoxLayout(self.feed_widget)
+
+        self.feed_layout.addWidget(self.tello_preview, alignment=Qt.AlignTop)
+        self.feed_layout.addWidget(self.webcam_preview, alignment=Qt.AlignTop)
+
+        self.panel = QWidget()
+        self.panel_layout = QGridLayout(self.panel)
+
+        self.controller = QComboBox()
+        self.panel_layout.addWidget(self.controller, 0, 0)
+
+        self.container.addWidget(self.feed_widget, alignment=Qt.AlignLeft)
+        self.container.addWidget(self.panel, alignment=Qt.AlignTop)
+
+        widget = QWidget()
+        widget.setLayout(self.container)
+
+        self.setCentralWidget(widget)
         self.start()
 
-        self.setCentralWidget(self.preview)
-        self.show()
-
     def start(self):
-        self.feed.start()
-        self.feed.image_update.connect(self.update_image)
+        self.tello_feed.start()
+        self.tello_feed.image_update.connect(self.update_tello_preview)
 
-    def update_image(self, image):
-        self.preview.setPixmap(QPixmap.fromImage(image))
+        self.camera_feed.start()
+        self.camera_feed.image_update.connect(self.update_webcam_preview)
+
+    def update_tello_preview(self, image):
+        self.tello_preview.setPixmap(QPixmap.fromImage(image))
+
+    def update_webcam_preview(self, image):
+        self.webcam_preview.setPixmap(QPixmap.fromImage(image))
+
+
+class CameraFeed(QThread):
+    image_update = pyqtSignal(QImage)
+
+    def __init__(self, parent: MainWindow):
+        super(CameraFeed, self).__init__(parent)
+        self.active = True
+        self.hand_tracker = HandTracker()
+
+    def run(self):
+        self.active = True
+
+        cap = cv2.VideoCapture(0)
+
+        while self.active:
+            _, frame = cap.read()
+
+            frame = self.hand_tracker.hands_finder(frame)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            qt_img = QImage(frame, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
+            qt_img = qt_img.scaled(320, 240, Qt.KeepAspectRatioByExpanding)
+            self.image_update.emit(qt_img)
+
+    def stop(self):
+        self.active = False
 
 
 class VideoFeed(QThread):
@@ -73,8 +129,8 @@ class VideoFeed(QThread):
             try:
                 vel = [self.tello.get_speed_x(), self.tello.get_speed_y(), self.tello.get_speed_z()]
 
-                frame = read.frame
-                frame = self.hand_tracker.hands_finder(frame)
+                frame: np.ndarray = read.frame
+                # frame = self.hand_tracker.hands_finder(frame)
 
                 center = [int(frame.shape[1] / 2), int(frame.shape[0] / 2)]
                 # GRAPHIC START
@@ -115,11 +171,10 @@ class VideoFeed(QThread):
                             org=(frame.shape[1] - 150, 80), color=(255, 255, 255),
                             fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5)
 
-
                 # GRAPHIC END
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 qt_img = QImage(frame, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
-                qt_img = qt_img.scaled(640, 480, Qt.KeepAspectRatio)
+                qt_img = qt_img.scaled(320, 240, Qt.KeepAspectRatioByExpanding)
                 self.image_update.emit(qt_img)
             except Exception as error:
                 print(error)

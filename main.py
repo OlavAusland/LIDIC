@@ -95,7 +95,11 @@ def predict_multiple_gestures(cap: cv2.VideoCapture, tracker: HandTracker, model
         result: list = []
         for i in range(0, len(tracker.results.multi_hand_landmarks)):
             lms = tracker.position_finder(frame, hand_no=i, normalized=True)
-
+            points = np.asarray([lms[0], lms[5], lms[17]])
+            normal_vector = np.cross(points[2] - points[0], points[1] - points[2])
+            print(normal_vector)
+            normal_vector /= np.linalg.norm(normal_vector)
+            print(normal_vector)
             if lms:
                 landmark = np.array(lms).reshape((42,))
                 predictions = model.predict(np.array([landmark]))
@@ -273,8 +277,8 @@ def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
-    predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'le        ft', 'right', 'undefined'])
-    # predict_multiple_gestures(cap, tracker, './models/7_model.h5')
+    # predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'le        ft', 'right', 'undefined'])
+    predict_multiple_gestures(cap, tracker, './models/7_model.h5')
     # projection(cap, tracker)
     # triangle_detection(cap)
     # detect_face(cap)

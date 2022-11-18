@@ -1,4 +1,4 @@
-<img src="static/UIA_Header.png">
+<img style='margin:0;' src="static/UIA_Header.png" alt=""/>
 
 # LIDIC - Live Interactive Drone Imaging Control
 This repository is an implementation of machine vision and deep neural networks to
@@ -25,11 +25,11 @@ which is the focus of this repository.
 
 Gestures our model is trained on:
 <div style="display:flex;flex-wrap: wrap; justify-content: center;">
-    <img style='width:33%;' src="static/directions/UpGesture.png" alt="up gesture"/>
-    <img style='width:33%;' src="static/directions/LeftGesture.png" alt="left gesture"/>
-    <img style='width:33%;' src="static/directions/RightGesture.png" alt="right gesture"/>
-    <img style='width:49%;' src="static/directions/DownGesture.png" alt="down gesture"/>
-    <img style='width:50%;' src="static/directions/StopGesture.png" alt="stop gesture"/>
+    <img style='width:30%;' src="static/directions/UpGesture.png" alt="up gesture"/>
+    <img style='width:30%;' src="static/directions/LeftGesture.png" alt="left gesture"/>
+    <img style='width:30%;' src="static/directions/RightGesture.png" alt="right gesture"/>
+    <img style='width:45%;' src="static/directions/DownGesture.png" alt="down gesture"/>
+    <img style='width:45%;' src="static/directions/StopGesture.png" alt="stop gesture"/>
 </div>
 
 ```bash

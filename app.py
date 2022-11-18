@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.tello = Tello()
-        # self.tello.connect()
+        self.tello.connect()
         self.setGeometry(640, 480, 640, 480)
         self.container = QVBoxLayout(self)
 

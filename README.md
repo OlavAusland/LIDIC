@@ -10,7 +10,7 @@ The default model has an input shape of (42,) and a output shape of (5,) the 5 c
 ![](static/default_model.png)
 
 <div style="margin: auto;width:50%;">
-    <img style="width:auto;" src="static/ControllerLayout.png" width="100%" alt=""/>
+    <img style="width:auto;" src="static/ControllerLayout.png" width="50%" alt=""/>
 </div>
 
 ```bash
@@ -24,7 +24,7 @@ which is the focus of this repository.
 
 
 Gestures our model is trained on:
-<div style="display:flex;flex-wrap: wrap; justify-content: center;">
+<div style="display:flex;flex-wrap: wrap; justify-content: center; justify-self: center">
     <img style='width:30%;' src="static/directions/UpGesture.png" alt="up gesture"/>
     <img style='width:30%;' src="static/directions/LeftGesture.png" alt="left gesture"/>
     <img style='width:30%;' src="static/directions/RightGesture.png" alt="right gesture"/>

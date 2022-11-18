@@ -126,7 +126,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
             _input = joy.read()
             try:
                 tello.send_command_without_return(
-                    f"rc {int(100 * _input['LJ_X'])} {int(100 * _input['LJ_Y'])} {int(100 * _input['RJ_Y'])} {int(100 * _input['RJ_X'])}")
+                    f"rc {int(100 * _input['RJ_X'])} {int(100 * _input['LJ_Y'])} {int(100 * _input['RJ_Y'])} {int(100 * _input['LJ_X'])}")
                 time.sleep(0.01)
 
                 if _input['RJ_T']:

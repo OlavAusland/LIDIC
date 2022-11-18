@@ -260,13 +260,14 @@ def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
     # create_dataset(cap, tracker, append=True, output='data/gestures/olav.csv')
-    # predict_gesture(cap, tracker, './models/7_model.h5', ['stop', 'undefined', 'up', 'down', 'lesft', 'right', 'undefined'])
+    predict_gesture(cap, tracker, './models/default.h5', ['stop', 'undefined', 'up', 'down', 'left', 'right', 'undefined'])
     # predict_multiple_gestures(cap, tracker, './models/7_model.h5')
     # projection(cap, tracker)
     # triangle_detection(cap)
-    frame_center = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) // 2), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2))
+    # frame_center = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) // 2), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2))
     # to_distance()
-    
+
+    """
     while True:
         _, frame = cap.read()
         cv2.flip(frame, 1)
@@ -282,7 +283,7 @@ def main():
         cv2.imshow('image', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+    """
 
 def to_distance():
     result = np.empty((0, 22), dtype=np.float)

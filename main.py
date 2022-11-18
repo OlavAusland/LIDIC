@@ -4,7 +4,7 @@ from typing import List, Union, Tuple
 import time
 import cv2
 import numpy as np
-from utils import HandTracker, detect_qr_code
+from utils import HandTracker, detect_qr_code, in_boundary
 import pandas as pd
 import csv
 from tensorflow.keras.models import load_model, Sequential

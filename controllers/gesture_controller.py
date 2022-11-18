@@ -48,14 +48,14 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
             result.append(int(predicted))
     key = '-'.join(str(e) for e in sorted(result))
     print(key)
-    """
+
     if key == '0':
         if tello.is_flying:
             tello.send_command_without_return('land')
         else:
             tello.send_command_without_return('takeoff')
         return
-    """
+
     if key in commands.keys():
         tello.send_command_without_return(commands[key])
 

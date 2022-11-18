@@ -23,7 +23,6 @@ def create_model() -> keras.Sequential:
     model = keras.Sequential(
         [
             layers.Input(shape=INPUT_SHAPE),
-            layers.Dropout(0.2),
             layers.Dense(20, activation='relu'),
             layers.Dropout(0.4),
             layers.Dense(20, activation='relu'),
@@ -91,7 +90,7 @@ def main():
 
     model.fit(x_train, y_train, epochs=1000, batch_size=64, validation_data=(x_test, y_test),
               callbacks=[tensorboard_callback])
-    model.save('models/test.h5')
+    model.save('models/default.h5')
 
 
 if __name__ == '__main__':

@@ -11,8 +11,10 @@ from tellogui import *
 from controllers.gesture_controller import gesture_controller
 from controllers.keyboard_controller import keyboard_controller
 from tensorflow.keras.models import load_model, Sequential
+import argparse
 
 EXIT = False
+parser = argparse.ArgumentParser()
 
 
 def video_stream(tello: Tello, queue: Queue, frame_queue: Queue):
@@ -97,13 +99,19 @@ def keep_alive(tello: Tello):
 
 
 def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
-    global EXIT
+    global EXIT, parser
     joy = None
     downwards_cam = False
     tello.set_speed(100)
-    model: Sequential = load_model('./models/7_model.h5')
+    model: Sequential = load_model('./models/default.h5')
 
-    control_type = ControlType.gesture  # change control type of tello
+    control_type = ControlType.keyboard
+    print(parser.parse_args())
+    if parser.parse_args().controller == 'gesture':
+        control_type = ControlType.gesture
+    elif parser.parse_args().controller == 'xbox_controller':
+        control_type = ControlType.controller
+    print(control_type)
 
     # classes = ['down', 'stop', 'left', 'right', 'up', 'down', 'pinch']
     classes = ['stop', 'undefined', 'up', 'down', 'left', 'right', 'undefined']
@@ -111,6 +119,7 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
     if control_type == control_type.controller:
         joy = XboxController()
+
     cap = cv2.VideoCapture(0)
     while True:
         if control_type == ControlType.controller and (joy is not None):
@@ -178,6 +187,10 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
 
 
 def main():
+    global parser
+    parser.add_argument('-c', '--controller', nargs='?', const=ControlType.keyboard,
+                        help='Control type: [keyboard, gesture, xbox_controller]')
+
     frame = Queue()
     key_queue = Queue()
 

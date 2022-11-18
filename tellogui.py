@@ -11,10 +11,10 @@ def draw_rotation(image: np.ndarray, degree: float):
     :return: modified image
     """
     center = (image.shape[1] - 50, image.shape[0] - 50)
-    cv2.circle(image, center=center, radius=30, color=(255, 0, 255))
+    cv2.circle(image, center=center, radius=30, color=(255, 255, 255))
     cv2.circle(image, center=(center[0] + int(np.cos(np.deg2rad(degree)) * 30),
                               int(center[1] + np.sin(np.deg2rad(degree)) * 30)),
-               thickness=4, radius=4, color=(255, 255, 255))
+               thickness=4, radius=4, color=(0, 0, 255))
     return image
 
 

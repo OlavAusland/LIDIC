@@ -65,7 +65,6 @@ def load_data() -> tuple:
         train_x.append(image / 255.0)
         train_y.append(1)
 
-
     train_x = np.expand_dims(train_x, -1)
     train_y = np.array(train_y, dtype='float32')
 

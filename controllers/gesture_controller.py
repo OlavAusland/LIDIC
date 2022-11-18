@@ -1,5 +1,5 @@
 from djitellopy import Tello
-from utils import GestureControl
+from utilities import GestureControl
 import numpy as np
 from tensorflow.keras.models import load_model, Sequential
 
@@ -23,11 +23,11 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
     tracker = gesture_control.hand_tracker
 
     commands = {
-        '4': f'rc {-25} {0} {0} {0}', '2': f'rc {0} {0} {25} {0}',
-        '5': f'rc {25} {0} {0} {0}', '3': f'rc {0} {0} {-25} {0}', '0-4': f'rc {0} {0} {0} {-100}',
-        '0-5': f'rc {0} {0} {0} {100}', '0-2': f'rc {0} {25} {0} {0}', '0-3': f'rc {0} {-25} {0} {0}'
+        '1': f'rc {0} {0} {30} {0}', '2': f'rc {0} {0} {-30} {0}',
+        '3': f'rc {-30} {0} {0} {0}', '4': f'rc {30} {0} {0} {0}',
+        '0-1': f'rc {0} {30} {0} {0}', '0-2': f'rc {0} {-30} {0} {0}',
+        '0-3': f'rc {0} {0} {0} {-100}', '0-4': f'rc {0} {0} {0} {100}'
     }
-
 
     tracker.hands_finder(frame)
     if tracker.results.multi_hand_landmarks is None:

@@ -1,4 +1,4 @@
-<img style='margin:0;' src="static/UIA_Header.png" alt=""/>
+<img style='margin:0;' style="width: 100%" src="static/UIA_Header_English.png" alt=""/>
 
 # LIDIC - Live Interactive Drone Imaging Control
 This repository is an implementation of machine vision and deep neural networks to

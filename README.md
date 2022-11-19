@@ -47,5 +47,4 @@ pytthon tello.py -c [keyboard, gesture, xbox_controller]
 
 ## Demo Video:
 
-## Research Paper:
-todo
+## [Research Paper](./static/LIDIC.pdf)

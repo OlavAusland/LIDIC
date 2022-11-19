@@ -46,10 +46,6 @@ pytthon tello.py -c [keyboard, gesture, xbox_controller]
 ```
 
 ## Demo Video:
-
-
-<iframe style="width:100%;height:auto;" allow="picture-in-picture; accelerometer" src="https://youtu.be/KWKo3OtTaCg">
-
-</iframe>
+[![Demo Video](static/DemoTemplate.png)](https://youtu.be/KWKo3OtTaCg "Demo Video")
 
 ## [Research Paper](./static/LIDIC.pdf)

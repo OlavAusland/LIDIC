@@ -36,6 +36,18 @@ Gestures our model is trained on:
 python tello.py -c gesture
 ```
 
+### Combination of gestures results in a  different command:
+<div style="background-color:rgba(0, 0, 0, 0.1);padding:10px;border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.15);">
+    <ul>
+        <li>Stop + Right: Turn Right</li>
+        <li>Stop + Left: Turn Left</li>
+        <li>Stop + Up: Forwards</li>
+        <li>Stop + Down: Backwards</li>
+    </ul>
+</div>
+
+
 ## Installation & Use:
 ```bash
 pip install -r requirements.txt

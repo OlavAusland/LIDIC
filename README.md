@@ -9,7 +9,8 @@ The default model has an input shape of (42,) and a output shape of (5,) the 5 c
 
 ![](static/default_model.png)
 
-<div style="margin: auto;width:50%;">
+<div style="margin: auto;width:50%;background-color:rgba(0, 0, 0, 0.1); border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.3);">
     <img style="width:auto;" src="static/ControllerLayout.png" width="50%" alt=""/>
 </div>
 

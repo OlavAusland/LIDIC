@@ -56,8 +56,6 @@ python tello.py -c gesture
 </div>
 The left text will still identify the first hand detected on print this on the top left corner.
 
-<span style="background-color:black">test</span>
-
 ## Installation & Use:
 ```bash
 pip install -r requirements.txt

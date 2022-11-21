@@ -22,7 +22,7 @@ which is the focus of this repository.
 2. Connect your computer to the drone's access point (WIFI).
 3. Run the command below to start the program, choose one of the options below in the square brackets.
    ```bash
-   pytthon tello.py -c [keyboard, gesture, xbox_controller]
+   python tello.py -c [keyboard, gesture, xbox_controller]
    ```
 4. Controller Types:
     <div>

@@ -10,8 +10,7 @@ The default model has an input shape of (42,) and a output shape of (5,) the 5 c
 ![](static/default_model.png)
 
 This repository also allow to control the drone using your keyboard, an xbox controller as well as by gestures,
-which is the focus of this repository.
-
+the latter is the focus of this repository.
 
 ## Installation & Use:
 1. Install the requirements to be able to run our program, I am using a conda environment for easy setup.  
@@ -77,3 +76,23 @@ which is the focus of this repository.
 [![Demo Video](static/DemoTemplate.png)](https://youtu.be/KWKo3OtTaCg "Demo Video")
 
 ## [Research Paper](./static/LIDIC.pdf)
+
+## Project Structure:
+1. #### tello.py
+   File for actuall drone control, use this file when you want to connect and control the drone.
+2. #### train.py
+   File for actually training and creating the gesture recognizer 
+3. #### utillities.py
+   File for classes and functions frequently used in our program
+4. #### tellogui.py
+   Graphics which is used across files and function to draw information about
+   the tello drone and displaying it on a cv2 image feed.
+5. #### ./controllers
+   Different ways to control the drone, e.g xbox_controller, gestures and keyboard
+6. #### ./deprecated
+   Files which was used earlier in development to test different types of 
+   algorithms to e.g, detect shapes as well as isolating the hand.
+7. #### ./data
+   Different training sets to train our models on.
+8. #### ./models
+   Folder to contain different neural network models.

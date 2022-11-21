@@ -156,6 +156,8 @@ def controller(tello: Tello, key_queue: Queue, frame_queue: Queue):
         elif control_type == ControlType.keyboard:
             keyboard_controller(tello=tello, key_queue=key_queue)
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            tello.send_command_without_return('rc 0 0 0 0')
+            tello.land()
             EXIT = True
             break
     tello.land()

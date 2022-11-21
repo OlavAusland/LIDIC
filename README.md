@@ -28,9 +28,9 @@ which is the focus of this repository.
     <div>
         <ol>
             <li><b>Xbox Controller:</b></li>
-            <div style="margin-top:25px; margin-bottom: 25px;width:50%;background-color:rgba(0, 0, 0, 0.1); border-radius: 10px;
+            <div style="margin-top:25px; margin-bottom: 25px;width:100%;background-color:rgba(0, 0, 0, 0.1); border-radius: 10px;
                         box-shadow: 0 3px 15px rgba(0,0,0,0.3);justify-content: flex-start;">
-                <img src="static/ControllerLayout.png" alt=""/>
+                <img src="static/ControllerLayout.png" width="50%" alt=""/>
             </div>
             <li><b>Keyboard:</b>
                <div style="box-shadow: 0 3px 15px rgba(0,0,0,0.3);padding: 10px;border-radius: 10px;">

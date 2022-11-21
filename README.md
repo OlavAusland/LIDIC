@@ -33,7 +33,7 @@ which is the focus of this repository.
                 <img src="static/ControllerLayout.png" alt=""/>
             </div>
             <li><b>Keyboard:</b>
-               <div>
+               <div style="box-shadow: 0 3px 15px rgba(0,0,0,0.3);padding: 10px;border-radius: 10px;">
                     A - Left<br/>
                     D - Right<br/>
                     W - Forward<br/>
@@ -43,7 +43,7 @@ which is the focus of this repository.
                </div>
             </li>
             <li><b>Gesture</b>
-                <div>
+                <div style="box-shadow: 0 3px 15px rgba(0,0,0,0.3);padding: 10px;border-radius: 10px;">
                     Stop = Takeoff / Land<br/>
                     Hike Right = Go Right<br/>
                     Point Left = Go Left<br/>
@@ -61,12 +61,12 @@ which is the focus of this repository.
                     Stop + Point Left = Rotate Left<br/>
                     Stop + Point Up = Forward<br/>
                     Stop + Thumbs Down = Backwards<br/>
-                </div>
-                <div style="display:flex;flex-wrap: wrap; justify-content: flex-start; justify-self: center">
-                    <img style='width:24%;' src="static/directions/ControllerBackwards.png" alt="up gesture"/>
-                    <img style='width:24%;' src="static/directions/ControllerForward.png" alt="left gesture"/>
-                    <img style='width:24%;' src="static/directions/ControllerRotateLeft.png" alt="right gesture"/>
-                    <img style='width:24%;' src="static/directions/ControllerRotateRight.png" alt="down gesture"/>
+                    <div style="display:flex;flex-wrap: wrap; justify-content: flex-start; justify-self: center">
+                       <img style='width:24%;' src="static/directions/ControllerBackwards.png" alt="up gesture"/>
+                       <img style='width:24%;' src="static/directions/ControllerForward.png" alt="left gesture"/>
+                       <img style='width:24%;' src="static/directions/ControllerRotateLeft.png" alt="right gesture"/>
+                       <img style='width:24%;' src="static/directions/ControllerRotateRight.png" alt="down gesture"/>
+                    </div>
                 </div>
             </li>
         </ol>

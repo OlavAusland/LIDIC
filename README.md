@@ -46,6 +46,14 @@ python tello.py -c gesture
         <li>Stop + Down: <b>Backwards</b>   </li>
     </ul>
 </div>
+</br>
+<div style="display:flex;flex-wrap: wrap; justify-content: center; justify-self: center">
+    <img style='width:25%;' src="static/directions/ControllerBackwards.png" alt="up gesture"/>
+    <img style='width:25%;' src="static/directions/ControllerForward.png" alt="left gesture"/>
+    <img style='width:25%;' src="static/directions/ControllerRotateLeft.png" alt="right gesture"/>
+    <img style='width:25%;' src="static/directions/ControllerRotateRight.png" alt="down gesture"/>
+</div>
+The left text will still identify the first hand detected on print this on the top left corner.
 
 
 ## Installation & Use:

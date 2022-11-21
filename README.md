@@ -9,52 +9,9 @@ The default model has an input shape of (42,) and a output shape of (5,) the 5 c
 
 ![](static/default_model.png)
 
-<div style="margin: auto;width:50%;background-color:rgba(0, 0, 0, 0.1); border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.3);">
-    <img style="width:auto;" src="static/ControllerLayout.png" width="50%" alt=""/>
-</div>
-
-```bash
-python tello.py -c xbox_controller
-```
-
 This repository also allow to control the drone using your keyboard, an xbox controller as well as by gestures,
 which is the focus of this repository.
 
-
-
-
-Gestures our model is trained on:
-<div style="display:flex;flex-wrap: wrap; justify-content: center; justify-self: center">
-    <img style='width:30%;' src="static/directions/UpGesture.png" alt="up gesture"/>
-    <img style='width:30%;' src="static/directions/LeftGesture.png" alt="left gesture"/>
-    <img style='width:30%;' src="static/directions/RightGesture.png" alt="right gesture"/>
-    <img style='width:45%;' src="static/directions/DownGesture.png" alt="down gesture"/>
-    <img style='width:45%;' src="static/directions/StopGesture.png" alt="stop gesture"/>
-</div>
-
-```bash
-python tello.py -c gesture
-```
-
-### Combination of gestures results in a  different command:
-<div style="background-color:rgba(0, 0, 0, 0.2);padding:10px;border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.3);">
-    <ul>
-        <li>Stop + Right: <b>Turn Right</b></li>
-        <li>Stop + Left: <b>Turn Left</b></li>
-        <li>Stop + Up: <b>Forwards</b></li>
-        <li>Stop + Down: <b>Backwards</b>   </li>
-    </ul>
-</div>
-<br/>
-<div style="display:flex;flex-wrap: wrap; justify-content: center; justify-self: center">
-    <img style='width:24%;' src="static/directions/ControllerBackwards.png" alt="up gesture"/>
-    <img style='width:24%;' src="static/directions/ControllerForward.png" alt="left gesture"/>
-    <img style='width:24%;' src="static/directions/ControllerRotateLeft.png" alt="right gesture"/>
-    <img style='width:24%;' src="static/directions/ControllerRotateRight.png" alt="down gesture"/>
-</div>
-The left text will still identify the first hand detected on print this on the top left corner.
 
 ## Installation & Use:
 1. Install the requirements to be able to run our program, I am using a conda environment for easy setup.  
@@ -71,6 +28,10 @@ The left text will still identify the first hand detected on print this on the t
     <div>
         <ol>
             <li><b>Xbox Controller: See Image On Top.</b></li>
+            <div style="margin-top:25px; margin-bottom: 25px;width:50%;background-color:rgba(0, 0, 0, 0.1); border-radius: 10px;
+                        box-shadow: 0 3px 15px rgba(0,0,0,0.3);justify-content: flex-start;">
+                <img src="static/ControllerLayout.png" alt=""/>
+            </div>
             <li><b>Keyboard:</b>
                <div>
                     A - Left<br/>
@@ -80,6 +41,33 @@ The left text will still identify the first hand detected on print this on the t
                     X - Takeoff / Land
                     R - Reset RC (ZERO WHEN YOU WANT TO STAY STILL)
                </div>
+            </li>
+            <li><b>Gesture</b>
+                <div>
+                    Stop = Takeoff / Land<br/>
+                    Hike Right = Go Right<br/>
+                    Point Left = Go Left<br/>
+                    Point Up = Go Up<br/>
+                    Thumbs Down = Go Down<br/><br/>
+                    <div style="display:flex;flex-wrap: wrap; justify-content: flex-start; justify-self: center">
+                        <img style='width:30%;' src="static/directions/UpGesture.png" alt="up gesture"/>
+                        <img style='width:30%;' src="static/directions/LeftGesture.png" alt="left gesture"/>
+                        <img style='width:30%;' src="static/directions/RightGesture.png" alt="right gesture"/>
+                        <img style='width:30%;' src="static/directions/DownGesture.png" alt="down gesture"/>
+                        <img style='width:30%;' src="static/directions/StopGesture.png" alt="stop gesture"/>
+                    </div>
+                    <b> Multi Commands:</b><br/>
+                    Stop + Hike Right = Rotate Right<br/>
+                    Stop + Point Left = Rotate Left<br/>
+                    Stop + Point Up = Forward<br/>
+                    Stop + Thumbs Down = Backwards<br/>
+                </div>
+                <div style="display:flex;flex-wrap: wrap; justify-content: flex-start; justify-self: center">
+                    <img style='width:24%;' src="static/directions/ControllerBackwards.png" alt="up gesture"/>
+                    <img style='width:24%;' src="static/directions/ControllerForward.png" alt="left gesture"/>
+                    <img style='width:24%;' src="static/directions/ControllerRotateLeft.png" alt="right gesture"/>
+                    <img style='width:24%;' src="static/directions/ControllerRotateRight.png" alt="down gesture"/>
+                </div>
             </li>
         </ol>
     </div>

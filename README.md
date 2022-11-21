@@ -47,7 +47,7 @@ python tello.py -c gesture
         <li>Stop + Down: <b>Backwards</b>   </li>
     </ul>
 </div>
-</br>
+<br/>
 <div style="display:flex;flex-wrap: wrap; justify-content: center; justify-self: center">
     <img style='width:24%;' src="static/directions/ControllerBackwards.png" alt="up gesture"/>
     <img style='width:24%;' src="static/directions/ControllerForward.png" alt="left gesture"/>
@@ -57,13 +57,32 @@ python tello.py -c gesture
 The left text will still identify the first hand detected on print this on the top left corner.
 
 ## Installation & Use:
-```bash
-pip install -r requirements.txt
-```
+1. Install the requirements to be able to run our program, I am using a conda environment for easy setup.  
 
-```bash
-pytthon tello.py -c [keyboard, gesture, xbox_controller]
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
+2. Connect your computer to the drone's access point (WIFI).
+3. Run the command below to start the program, choose one of the options below in the square brackets.
+   ```bash
+   pytthon tello.py -c [keyboard, gesture, xbox_controller]
+   ```
+4. Controller Types:
+    <div>
+        <ol>
+            <li><b>Xbox Controller: See Image On Top.</b></li>
+            <li><b>Keyboard:</b>
+               <div>
+                    A - Left<br/>
+                    D - Right<br/>
+                    W - Forward<br/>
+                    S - Backwards<br/>
+                    X - Takeoff / Land
+                    R - Reset RC (ZERO WHEN YOU WANT TO STAY STILL)
+               </div>
+            </li>
+        </ol>
+    </div>
 
 ## Demo Video:
 [![Demo Video](static/DemoTemplate.png)](https://youtu.be/KWKo3OtTaCg "Demo Video")

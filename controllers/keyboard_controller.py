@@ -5,6 +5,7 @@ from queue import Queue
 def keyboard_controller(tello: Tello, key_queue: Queue):
     """
     Control the drone using the keyboard.
+    [Change to take in variable speed]
 
     :param tello: The tello drone / object to perform the instructions on
     :param key_queue: Key queue to extract key presses

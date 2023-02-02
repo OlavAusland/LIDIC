@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 
+# YEAH.... a lot of unnecessary code, we will fix later :p
+
 
 def draw_rotation(image: np.ndarray, degree: float):
     """

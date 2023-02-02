@@ -9,6 +9,7 @@ def gesture_controller(frame: np.ndarray, tello: Tello, gesture_control: Gesture
                        debug: bool = False):
     """
     Control the drone using gestures.
+    [Change to take in variable speed]
 
     :param model: Model used for prediction
     :param threshold: Minimum value / probability for drone to react to gesture
